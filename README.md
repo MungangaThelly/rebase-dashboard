@@ -1,630 +1,271 @@
-# 🌞 Rebase Energy Dashboard - Data Democratization Platform
+# 🌞 Rebase Energy Dashboard - Renewable Energy Research Platform
 
-*Supporting the global transition to renewable energy through open, accessible data and collaborative research tools.*
+A professional renewable energy research platform combining real weather data with solar farm analysis for Sweden. Built with React, Vite, and the Rebase Energy API.
 
-*"Making renewable energy data as accessible as machine learning models"*
+![Platform Status](https://img.shields.io/badge/Status-Operational-green)
+![Weather API](https://img.shields.io/badge/Weather_API-Connected-blue)
+![Research Ready](https://img.shields.io/badge/Research-Ready-orange)
 
-![Energy Dashboard](https://img.shields.io/badge/Energy-Dashboard-green?style=for-the-badge&logo=solar-power)
-![React](https://img.shields.io/badge/React-18.x-blue?style=for-the-badge&logo=react)
-![Vite](https://img.shields.io/badge/Vite-Latest-purple?style=for-the-badge&logo=vite)
-![Research](https://img.shields.io/badge/Research-Platform-orange?style=for-the-badge)
-![Live](https://img.shields.io/badge/Status-Live-brightgreen?style=for-the-badge)
+## ✨ Features
 
-## 🌍 **Vision: "Hugging Face for Energy Data"**
+### 🏭 **Solar Farm Analysis**
+- **5 Swedish Solar Research Sites** with realistic production data
+- **Multiple Technologies**: Crystalline Silicon, Thin-film, Bifacial, Perovskite-tandem
+- **Geographic Coverage**: Stockholm, Gothenburg, Malmö, Uppsala regions
+- **Capacity Range**: 18.7 MW to 50.2 MW installations
 
-Just as Hugging Face democratized AI/ML through open models and collaborative tools, this platform aims to democratize renewable energy data and research capabilities for the global energy transition.
+### 🌤️ **Real Weather Integration**
+- **Live Weather Data** from Rebase Energy API
+- **Comprehensive Metrics**: Temperature, Wind Speed, Solar Radiation, Cloud Cover, Humidity
+- **48-hour Forecasts** with hourly resolution
+- **Geographic Correlation** with solar site locations
 
-**🚀 [Live Demo](your-netlify-url-here)** | **📊 [API Documentation](./docs/api.md)** | **🔬 [Research Guide](./docs/research.md)**
+### 📊 **Research Capabilities**
+- **Combined Analysis**: Solar production + weather correlation
+- **Realistic Forecasting**: 30-minute interval solar production curves
+- **Data Export**: CSV format for MATLAB/Python analysis
+- **Professional Visualizations**: Charts and statistical summaries
 
----
+## 🚀 Quick Start
 
-## ⚡ **Quick Start**
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Rebase Energy API key
 
-```bash
-# Clone and setup
-git clone https://github.com/yourusername/rebase-dashboard.git
-cd rebase-dashboard
-npm install
-
-# Configure (research/educational API key)
-echo "VITE_REBASE_API_KEY=your_research_api_key" > .env
-
-# Launch platform
-npm run dev
-# Visit http://localhost:5173
-```
-
----
-
-## 🎯 **Platform Overview**
-
-### **🔬 Research-First Energy Platform**
-Transforming energy data from isolated silos into an accessible, collaborative research ecosystem:
-
-| Feature | Research Benefit | Current Status |
-|---------|------------------|----------------|
-| **Real Energy Data** | Authentic datasets for validation | ✅ Live Rebase Energy API |
-| **Open Standards** | Reproducible research methods | ✅ Standardized formats |
-| **Enhanced Exports** | Multiple analysis formats | 🚧 October 2025 |
-| **Collaborative Tools** | Multi-institutional projects | 🚧 February 2026 |
-| **Global Community** | International research network | 🚧 August 2026 |
-
-### **⚡ Current Capabilities**
-- **🌞 Live Solar Data**: Real installations with production forecasts
-- **📊 Interactive Visualization**: Research-grade charts with export
-- **🔍 Multi-Site Analysis**: Compare performance across regions
-- **📱 Responsive Design**: Access from any research environment
-
----
-
-## 🏗️ **Technical Architecture**
-
-### **🔋 Smart Data Integration**
-```javascript
-// Unified API for multiple energy data sources
-const energyPlatform = {
-  providers: {
-    'rebase-energy': { status: 'active', coverage: 'global' },
-    'open-energy-data': { status: 'planned-q1-2026', coverage: 'EU' },
-    'research-datasets': { status: 'roadmap-q2-2026', coverage: 'academic' }
-  },
-  
-  // Standardized data access
-  async getSites(filters) {
-    return await this.fetchStandardized('/sites', filters);
-  },
-  
-  // Research-focused exports (Enhanced in Oct 2025)
-  async exportData(siteId, format = 'csv') {
-    return await this.generateExport(siteId, format);
-  }
-};
-```
-
-### **📊 Research-Grade Visualization**
-```javascript
-// Scientific charting with annotation support (Coming Feb 2026)
-<ForecastChart 
-  siteData={selectedSites}
-  timeRange="24h"
-  exportFormats={['csv', 'json', 'matlab', 'hdf5', 'r']}  // Enhanced Oct 2025
-  annotations={researchNotes}                             // Coming Nov 2025
-  collaborativeMode={true}                                // Coming Feb 2026
-/>
-```
-
-### **🌐 Production Architecture**
-```
-Development:  React + Vite → Proxy → Rebase Energy API
-Production:   Netlify CDN → Redirects → https://api.rebase.energy
-Research:     Data Export → Analysis Tools → Publications
-Community:    User Accounts → Collaboration → Global Impact (Aug 2026)
-```
-
----
-
-## 📈 **Research Applications**
-
-### **🎓 Academic Research**
-
-#### **Renewable Energy Forecasting**
-- **Algorithm Validation**: Test ML models against real production data
-- **Comparative Studies**: Multi-site performance analysis
-- **Weather Correlation**: Meteorological impact on energy production
-- **Grid Integration**: Production variability for stability research
-
-#### **Sustainability Research**
-- **Carbon Impact Analysis**: Quantify renewable energy benefits
-- **Policy Effectiveness**: Evidence-based renewable energy policy
-- **Technology Assessment**: Solar vs wind performance studies
-- **Regional Planning**: Geographic renewable energy potential
-
-#### **Data Science Applications**
-- **Time Series Analysis**: Seasonal and daily production patterns
-- **Machine Learning**: Forecasting model development and validation
-- **Statistical Modeling**: Performance prediction algorithms
-- **Anomaly Detection**: Equipment failure and maintenance optimization
-
-### **🏭 Industry Applications**
-
-#### **Benchmarking & Optimization**
-- **Performance Standards**: Industry-wide efficiency comparisons
-- **Best Practices**: Shared optimization methodologies
-- **Equipment Evaluation**: Technology performance validation
-- **Maintenance Planning**: Predictive maintenance algorithms
-
-#### **Market Analysis**
-- **Production Forecasting**: Grid planning and energy trading
-- **Capacity Planning**: Investment decision support
-- **Risk Assessment**: Weather and production variability analysis
-- **Economic Modeling**: Cost-benefit analysis for renewable investments
-
----
-
-## 🛠️ **Installation & Configuration**
-
-### **🔧 Development Setup**
+### Installation
 
 ```bash
-# Requirements
-node --version  # 16+
-npm --version   # 8+
-
-# Installation
-git clone https://github.com/yourusername/rebase-dashboard.git
+# Clone the repository
+git clone <your-repo-url>
 cd rebase-dashboard
+
+# Install dependencies
 npm install
 
-# Environment configuration
+# Set up environment variables
 cp .env.example .env
-# Edit .env with your API credentials
+# Add your Rebase Energy API key to .env:
+VITE_REBASE_API_KEY=your_api_key_here
+
+# Start development server
+npm run dev
 ```
 
-### **⚙️ Environment Variables**
+### Environment Setup
+
+Create a `.env` file in the project root:
+
 ```env
-# Required
 VITE_REBASE_API_KEY=your_rebase_energy_api_key
-
-# Optional (enhanced features coming Oct 2025)
-VITE_RESEARCH_MODE=true
-VITE_EXPORT_ENABLED=true
-VITE_COLLABORATION_FEATURES=false  # Available Feb 2026
 ```
 
-### **🚀 Deployment Options**
+## 🏗️ Architecture
 
-#### **Netlify (Recommended)**
-```bash
-# Build command
-npm run build
-
-# Publish directory
-dist
-
-# Required: _redirects file for API proxy
-echo "/api/* https://api.rebase.energy/:splat 200" > public/_redirects
+### Data Sources
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Mock Sites    │    │  Real Weather    │    │   Research      │
+│  (Swedish PV)   │ +  │ (Rebase Energy)  │ =  │   Platform      │
+│   Controlled    │    │   Live Data      │    │  Professional   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
-#### **Custom Server**
-```bash
-# Production build
-npm run build
-npm run preview
+### Technology Stack
+- **Frontend**: React 18, Vite 5
+- **API Integration**: Rebase Energy Weather API v2
+- **Proxy**: Vite proxy for CORS handling
+- **Styling**: CSS Modules, Responsive Design
+- **Charts**: Custom chart components
 
-# Docker deployment (Enhanced container coming Oct 2025)
-docker build -t energy-dashboard .
-docker run -p 3000:3000 energy-dashboard
-```
+## 📋 Research Sites
 
----
+| Site ID | Name | Location | Capacity | Technology |
+|---------|------|----------|----------|------------|
+| `se-stockholm-alpha` | Stockholm Solar Alpha | 59.3293°N, 18.0686°E | 50.2 MW | Crystalline-Si |
+| `se-stockholm-beta` | Stockholm Solar Beta | 59.3498°N, 18.0973°E | 25.8 MW | Thin-film |
+| `se-gothenburg-green` | Gothenburg Green Energy Park | 57.7089°N, 11.9746°E | 35.4 MW | Bifacial |
+| `se-malmo-renewable` | Malmö Renewable Energy Hub | 55.6050°N, 13.0038°E | 42.1 MW | Crystalline-Si |
+| `se-uppsala-research` | Uppsala Solar Research Facility | 59.8586°N, 17.6389°E | 18.7 MW | Perovskite-tandem |
 
-## 📊 **Data Sources & Standards**
+## 🔧 Configuration
 
-### **🌞 Current Data Provider**
-
-#### **Rebase Energy Platform**
-- **Coverage**: Global solar installations
-- **Resolution**: Hourly production data and forecasts
-- **Quality**: Professional-grade meteorological models
-- **Standards**: RESTful API with JSON responses
-
+### API Modes
 ```javascript
-// Example data structure
-{
-  "site_id": "solar-installation-001",
-  "type": "solar",
-  "location": {
-    "latitude": 59.3293,
-    "longitude": 18.0686,
-    "name": "Stockholm Solar Farm"
-  },
-  "capacity": [
-    { "value": 1000, "unit": "kW", "dateEnd": null }
-  ],
-  "forecast": [
-    {
-      "time": "2025-01-15T12:00:00Z",
-      "value": 750.5,
-      "unit": "kW",
-      "confidence": 0.85
+// src/api/rebaseApi.js
+const FORCE_MOCK = true;  // Set to false for real API when available
+```
+
+### Proxy Configuration
+```javascript
+// vite.config.js
+export default defineConfig({
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://api.rebase.energy',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        secure: true
+      }
     }
-  ]
+  }
+})
+```
+
+## 📊 Data Export
+
+### Available Formats
+- **CSV**: Comma-separated values with headers
+- **JSON**: Structured data for API consumption
+- **Research-Ready**: Combined solar + weather datasets
+
+### Export Example
+```javascript
+import { exportCombinedData } from './api/rebaseApi';
+
+// Export site data for analysis
+const csvData = await exportCombinedData('se-stockholm-alpha', 'csv');
+const jsonData = await exportCombinedData('se-stockholm-alpha', 'json');
+```
+
+## 🔬 Research Applications
+
+### Performance Analysis
+- **Solar irradiance vs power output correlation**
+- **Temperature effects on PV efficiency**
+- **Cloud cover impact on production variability**
+- **Geographic performance comparison**
+
+### Technology Comparison
+- **Crystalline Silicon vs Thin-film efficiency**
+- **Bifacial vs conventional panel performance**
+- **Emerging technology (Perovskite-tandem) analysis**
+
+### Forecasting Research
+- **Weather-based production forecasting**
+- **Seasonal performance patterns**
+- **Machine learning model development**
+
+## 🛠️ Development
+
+### Project Structure
+```
+src/
+├── api/
+│   └── rebaseApi.js          # API integration & mock data
+├── components/
+│   ├── Dashboard.jsx         # Main dashboard
+│   ├── SiteSelector.jsx      # Site selection component
+│   ├── WeatherForecastPanel.jsx # Weather analysis
+│   └── ChartComponent.jsx    # Data visualization
+├── data/
+│   └── mockData.js          # Sample chart data
+└── styles/
+    └── *.css               # Component styling
+```
+
+### Adding New Sites
+```javascript
+// Add to MOCK_SITES array in rebaseApi.js
+{
+  id: 'se-new-site',
+  name: 'New Swedish Solar Farm',
+  location: { latitude: XX.XXXX, longitude: XX.XXXX },
+  capacity: XX.X,
+  type: 'utility-scale',
+  status: 'operational',
+  technology: 'crystalline-si'
 }
 ```
 
-### **🔮 Planned Data Sources (2026)**
-- **Open Energy Data Platform**: EU-wide renewable installations (Q1 2026)
-- **Research Datasets**: Academic institution contributions (Q2 2026)
-- **Community Data**: Crowdsourced small-scale installations (Q3 2026)
-- **Historical Archives**: Long-term climate and production data (Q4 2026)
-
----
-
-## 🔬 **Research Features Roadmap**
-
-### **📊 Enhanced Data Export (October 2025)**
+### Custom Analysis
 ```javascript
-// Multiple export formats for research tools
-const exportOptions = {
-  formats: ['csv', 'json', 'hdf5', 'matlab', 'r', 'parquet'],  // Enhanced
-  timeRanges: ['1h', '24h', '7d', '30d', '1y', 'custom'],      // Flexible
-  aggregations: ['raw', 'hourly', 'daily', 'monthly'],
-  metadata: true,          // Include quality metrics and provenance
-  compression: true,       // Optimized file sizes
-  streaming: true         // Large dataset support
-};
+// Extend fetchSiteWithWeather for custom correlations
+export async function customAnalysis(siteId) {
+  const data = await fetchSiteWithWeather(siteId);
+  // Add your analysis logic here
+  return enhancedData;
+}
 ```
 
-### **🔍 Advanced Analytics (November 2025)**
-```javascript
-// Research-focused data queries with statistical tools
-const researchQuery = {
-  sites: filterBy({
-    technology: 'solar',
-    capacity: { min: 100, max: 5000 },
-    location: { country: 'Sweden', region: 'Stockholm' },
-    dataQuality: { threshold: 0.95 },
-    timeRange: { start: '2024-01-01', end: '2025-12-31' }
-  }),
-  
-  analytics: [                    // New in Nov 2025
-    'statistical_summary',
-    'correlation_analysis', 
-    'trend_detection',
-    'anomaly_identification'
-  ],
-  
-  visualization: [               // Enhanced in Nov 2025
-    'time_series_plots',
-    'correlation_heatmaps',
-    'performance_benchmarks',
-    'interactive_dashboards'
-  ]
-};
-```
+## 📈 API Status
 
-### **🤝 Collaboration Tools (February 2026)**
-```javascript
-// Multi-institutional research project support
-const collaborativeProject = {
-  projectId: 'nordic-solar-research-2026',
-  participants: [
-    { institution: 'RISE', role: 'lead', permissions: 'full' },
-    { institution: 'KTH', role: 'partner', permissions: 'analysis' },
-    { institution: 'Chalmers', role: 'contributor', permissions: 'read' }
-  ],
-  
-  features: [
-    'shared_datasets',           // Secure data sharing
-    'collaborative_annotations', // Research notes and insights
-    'version_control',          // Dataset and analysis versioning
-    'result_aggregation',       // Combined analysis results
-    'publication_pipeline'      // DOI assignment and citations
-  ]
-};
-```
+### Current Integration
+- ✅ **Weather API**: Fully operational via proxy
+- ✅ **Sites Data**: Mock data (5 Swedish solar farms)
+- ✅ **Solar Forecasts**: Realistic production curves
+- ✅ **Combined Analysis**: Weather + solar correlation
 
----
+### API Endpoints Tested
+- ❌ `/sites` - Not available
+- ❌ `/solar/sites` - Not available  
+- ❌ `/assets` - Not available
+- ✅ `/weather/v2/query` - Operational
 
-## 📈 **Development Roadmap & Timeline**
+## 🐛 Troubleshooting
 
-### **🎯 Phase 1: Enhanced Foundation (August - October 2025)**
-**Status: 🚧 In Development**
+### Common Issues
 
-#### **August 2025**
-- [x] **Current Platform**: Live with real Rebase Energy integration
-- [ ] **Enhanced Exports**: HDF5, MATLAB, R format support
-- [ ] **Performance Optimization**: <1s load times, improved caching
-- [ ] **Mobile Enhancement**: Full responsiveness across devices
-
-#### **September 2025**
-- [ ] **Statistical Tools**: Integrated analysis capabilities
-- [ ] **Data Quality Metrics**: Automated validation and scoring
-- [ ] **Advanced Filtering**: Complex query builder interface
-- [ ] **Visualization Upgrades**: Interactive charts with zoom/pan
-
-#### **October 2025**
-- [ ] **Beta Testing**: Partner with 5 research institutions
-- [ ] **Documentation**: Comprehensive research methodology guides
-- [ ] **Performance Validation**: 99.99% uptime, <1s response times
-- [ ] **Security Hardening**: Research-grade data protection
-
-**🎯 Milestone: Research-Ready Platform (October 31, 2025)**
-
-### **🔬 Phase 2: Research Platform (November 2025 - February 2026)**
-**Status: 🔮 Planned**
-
-#### **November 2025**
-- [ ] **User Accounts**: Research profiles and project management
-- [ ] **Annotation System**: Collaborative research notes
-- [ ] **Basic Collaboration**: Shared datasets and projects
-- [ ] **Educational Integration**: University partnership pilot
-
-#### **December 2025**
-- [ ] **Multi-Provider Planning**: API design for additional data sources
-- [ ] **Advanced Analytics**: Statistical analysis dashboard
-- [ ] **Community Features**: Research forums and knowledge sharing
-- [ ] **Mobile App**: Native mobile research tools
-
-#### **January 2026**
-- [ ] **API Ecosystem**: Third-party integrations and extensions
-- [ ] **Research Workflows**: Automated analysis pipelines
-- [ ] **Publication Tools**: Citation management and DOI assignment
-- [ ] **Quality Assurance**: Peer review and validation systems
-
-#### **February 2026**
-- [ ] **Full Collaboration**: Multi-institutional project workspaces
-- [ ] **Beta Testing**: 25 research institutions actively using platform
-- [ ] **Performance Scaling**: Support for 1000+ concurrent users
-- [ ] **Training Program**: Comprehensive user education
-
-**🎯 Milestone: Full-Featured Research Platform (February 28, 2026)**
-
-### **🌍 Phase 3: Global Community Platform (March - August 2026)**
-**Status: 🌟 Vision**
-
-#### **March - April 2026**
-- [ ] **Global Launch**: International research community platform
-- [ ] **Multi-Provider Integration**: EU energy data sources
-- [ ] **Industry Partnerships**: Commercial research licensing
-- [ ] **Policy Integration**: Government and NGO collaboration tools
-
-#### **May - June 2026**
-- [ ] **Community Datasets**: User-contributed research data
-- [ ] **Advanced Research Tools**: Machine learning model sharing
-- [ ] **International Expansion**: Asia-Pacific and Americas coverage
-- [ ] **Sustainability Model**: Self-sustaining platform economics
-
-#### **July - August 2026**
-- [ ] **Global Impact**: 100+ institutions, 1000+ researchers
-- [ ] **Policy Influence**: Supporting international climate research
-- [ ] **Innovation Ecosystem**: 50+ derived research projects
-- [ ] **Platform Maturity**: Feature-complete, globally recognized
-
-**🎯 Final Milestone: Global Research Community Platform (August 31, 2026)**
-
----
-
-## 🏆 **Success Metrics & Validation**
-
-### **📊 Development Milestones**
-
-#### **Phase 1 Success Criteria (October 2025)**
-```
-Technical Excellence:
-✅ 99.99% platform uptime
-✅ <1s average response time
-✅ 5+ export formats supported
-✅ Mobile-responsive design
-
-Research Adoption:
-✅ 10+ research institutions registered
-✅ 50+ active researchers using platform
-✅ 5+ research papers in preparation
-✅ 3+ university partnerships established
-```
-
-#### **Phase 2 Success Criteria (February 2026)**
-```
-Platform Capabilities:
-✅ Full collaboration features deployed
-✅ 25+ research institutions active
-✅ 500+ researchers registered
-✅ Multi-provider data integration
-
-Research Impact:
-✅ 20+ published research papers
-✅ 10+ student thesis projects
-✅ 5+ policy research studies
-✅ International research collaborations
-```
-
-#### **Phase 3 Success Criteria (August 2026)**
-```
-Global Platform:
-✅ 100+ institutions worldwide
-✅ 1000+ active researchers
-✅ Self-sustaining economics
-✅ Global policy influence
-
-Research Ecosystem:
-✅ 100+ published papers using platform
-✅ 50+ derived research projects
-✅ Industry adoption and licensing
-✅ Climate research contributions
-```
-
----
-
-## 🌐 **Community & Collaboration**
-
-### **🤝 Contributing to Development**
-
-#### **For Researchers (Available Now)**
+**Proxy not working:**
 ```bash
-# Provide feedback on current platform
-npm run feedback-survey
-
-# Request specific research features
-npm run feature-request --type=research-need
-
-# Join beta testing program (October 2025)
-npm run join-beta --institution=your-university
+# Check vite.config.js proxy settings
+# Verify API key in .env file
+# Restart development server
+npm run dev
 ```
 
-#### **For Institutions (Partnership Program)**
-- **Early Adopters (August 2025)**: Shape platform development
-- **Beta Partners (October 2025)**: Test research features
-- **Launch Partners (February 2026)**: Full collaboration platform
-- **Global Network (August 2026)**: International research leadership
-
-### **📚 Educational Integration Timeline**
-
-#### **Phase 1: Pilot Programs (October 2025)**
-- **5 Swedish Universities**: Energy engineering course integration
-- **Course Materials**: Real data for classroom exercises
-- **Student Projects**: Hands-on analysis assignments
-- **Faculty Training**: Platform methodology workshops
-
-#### **Phase 2: Expansion (February 2026)**
-- **25 European Universities**: Multi-country education network
-- **Standardized Curricula**: Common energy research methodology
-- **Student Exchange**: International research collaboration
-- **Industry Connections**: Graduate placement program
-
-#### **Phase 3: Global Education (August 2026)**
-- **100+ Universities Worldwide**: Global education standard
-- **Online Certification**: Energy data analysis credentials
-- **Research Training**: Next-generation energy researchers
-- **Career Pipeline**: Direct industry and research placement
-
----
-
-## 🗂️ **Project Structure & Development**
-
-```
-rebase-dashboard/
-├── 📁 src/
-│   ├── 📁 components/           # React components
-│   │   ├── 📄 ForecastChart.jsx     # Energy visualization (Enhanced Oct 2025)
-│   │   ├── 📄 SiteSelector.jsx      # Installation browser
-│   │   ├── 📄 DataExporter.jsx      # Research export tools (Enhanced Oct 2025)
-│   │   ├── 📄 AnalyticsDashboard.jsx # Statistical tools (Nov 2025)
-│   │   ├── 📄 CollaborationPanel.jsx # Team features (Feb 2026)
-│   │   └── 📄 CommunityHub.jsx      # Global platform (Aug 2026)
-│   ├── 📁 api/                  # Data integration
-│   │   ├── 📄 rebaseApi.js          # Rebase Energy client
-│   │   ├── 📄 multiProvider.js      # Multi-source integration (2026)
-│   │   ├── 📄 standardization.js   # Data format normalization
-│   │   └── 📄 exports.js           # Research export utilities (Enhanced Oct 2025)
-│   ├── 📁 analytics/            # Research tools (Nov 2025)
-│   │   ├── 📄 statistics.js        # Statistical analysis
-│   │   ├── 📄 visualization.js     # Advanced charting
-│   │   └── 📄 ml-tools.js          # Machine learning utilities
-│   ├── 📁 collaboration/        # Team features (Feb 2026)
-│   │   ├── 📄 projects.js          # Project management
-│   │   ├── 📄 sharing.js           # Data and result sharing
-│   │   └── 📄 annotations.js       # Research notes
-│   └── 📁 styles/               # Professional styling
-├── 📁 docs/                     # Documentation
-│   ├── 📄 api.md                   # API reference
-│   ├── 📄 research.md              # Research methodology guide
-│   ├── 📄 collaboration.md         # Team collaboration guide (Feb 2026)
-│   ├── 📄 educational.md           # Teaching resources
-│   └── 📄 roadmap.md              # Development timeline
-├── 📁 tests/                    # Quality assurance
-│   ├── 📄 unit-tests/              # Component testing
-│   ├── 📄 integration-tests/       # API testing
-│   └── 📄 research-validation/     # Research workflow testing
-├── 📁 public/
-│   └── 📄 _redirects               # Netlify API proxy
-├── 📄 vite.config.js            # Build configuration
-├── 📄 package.json              # Dependencies
-└── 📄 PRESENTATION.md           # Platform vision and roadmap
+**API key errors:**
+```bash
+# Verify .env file exists and contains:
+VITE_REBASE_API_KEY=your_actual_key
 ```
 
----
-
-## 📄 **Academic Citations**
-
-When using this platform in research, please cite:
-
-```bibtex
-@software{rebase_energy_dashboard_2025,
-  title={Rebase Energy Dashboard: Data Democratization Platform for Renewable Energy Research},
-  author={Your Name},
-  year={2025},
-  url={https://github.com/yourusername/rebase-dashboard},
-  version={1.0.0},
-  note={Open source platform for collaborative renewable energy research}
-}
+**Mock data not loading:**
+```javascript
+// Check FORCE_MOCK setting in rebaseApi.js
+const FORCE_MOCK = true; // Should be true for development
 ```
 
-### **📚 Publication Pipeline**
-- **Phase 1 Papers (October 2025)**: Platform methodology and validation
-- **Phase 2 Papers (February 2026)**: Collaborative research outcomes
-- **Phase 3 Papers (August 2026)**: Global impact and policy influence
+## 📚 Research Documentation
+
+### Data Quality
+- **Weather Data**: Real-time from Rebase Energy (DWD ICON-EU model)
+- **Solar Data**: Realistic production curves with weather correlation
+- **Temporal Resolution**: 30-minute intervals for solar, hourly for weather
+- **Geographic Accuracy**: Precise coordinates for all research sites
+
+### Statistical Capabilities
+- **Correlation Analysis**: Pearson coefficients between weather and production
+- **Time Series**: 48-hour forecasts with confidence intervals
+- **Comparative Studies**: Multi-site performance analysis
+- **Export Tools**: MATLAB, Python, R compatible formats
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-analysis`)
+3. Commit your changes (`git commit -m 'Add amazing analysis feature'`)
+4. Push to the branch (`git push origin feature/amazing-analysis`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Rebase Energy** for providing weather API access
+- **Swedish Energy Research Community** for site inspiration
+- **Open Source Community** for React and Vite ecosystem
+
+## 📞 Support
+
+For questions about the research platform:
+- Create an issue in this repository
+- Check the troubleshooting section
+- Review the API documentation
 
 ---
 
-## 🤝 **Partnerships & Acknowledgments**
-
-### **🏢 Current Partners**
-- **Rebase Energy**: Professional API access and data quality
-- **RISE Research Institutes**: Platform development and validation
-- **Swedish Universities**: Educational integration and testing
-
-### **🎯 Partnership Timeline**
-- **October 2025**: 10 research institution partnerships
-- **February 2026**: 25 university collaborations
-- **August 2026**: 100+ global institutional network
-
----
-
-## 📞 **Contact & Collaboration**
-
-### **👨‍💻 Development Team**
-**Lead Developer**: [Your Name]  
-**Research Focus**: Energy data democratization and collaborative platforms  
-**Email**: [your.email@domain.com]  
-**GitHub**: [https://github.com/yourusername]  
-**LinkedIn**: [https://linkedin.com/in/yourprofile]  
-
-### **🔬 Research Interests**
-- Renewable energy forecasting and optimization
-- Open data platforms for sustainability research
-- Collaborative tools for energy transition
-- Policy-relevant energy analytics and modeling
-
-### **🤝 Collaboration Opportunities**
-- **Immediate (Aug 2025)**: Platform feedback and feature requests
-- **Beta Testing (Oct 2025)**: Research institution partnerships
-- **Full Platform (Feb 2026)**: Collaborative research projects
-- **Global Network (Aug 2026)**: International research leadership
-
----
-
-## 📄 **License & Usage**
-
-### **📜 MIT License**
-This project is licensed under the MIT License - promoting open research and collaboration.
-
-```
-MIT License - Copyright (c) 2025 [Your Name]
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software...
-```
-
-### **🎓 Research Usage Rights**
-- ✅ **Academic Research**: Free for all educational institutions
-- ✅ **Open Source Contributions**: Encouraged and supported
-- ✅ **Policy Research**: Supporting evidence-based decision making
-- ✅ **Community Projects**: Enabling local energy initiatives
-- ✅ **Commercial Research**: Contact for licensing discussions (2026)
-
----
-
-**🌞 Democratizing Energy Data | ⚡ Empowering Collaborative Research | 🌍 Accelerating Energy Transition**
-
-*"Making renewable energy data as accessible as machine learning models"*
-
----
-
-## 🎯 **Get Involved**
-
-### **🚀 Current Opportunities**
-- **Researchers**: Use live platform and provide feedback
-- **Institutions**: Join early adopter program
-- **Students**: Access real energy data for projects
-- **Developers**: Contribute to open source development
-
-### **📅 Upcoming Milestones**
-- **October 2025**: Research-ready platform with enhanced features
-- **February 2026**: Full collaboration and multi-institutional support
-- **August 2026**: Global research community platform
-
-**🚀 Ready to revolutionize energy research? [Get started now](your-netlify-url-here) or [join the development community](https://github.com/yourusername/rebase-dashboard)!**
+**🌞 Built for renewable energy research with real weather data and professional-grade analysis capabilities.** ⚡📊🇸🇪

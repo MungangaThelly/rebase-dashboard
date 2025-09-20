@@ -3,7 +3,7 @@ import ChartComponent from './ChartComponent';
 import mockData from '../data/mockData';
 import './Dashboard.css';
 import { WeatherForecastPanel } from './WeatherForecastPanel.jsx';
-import { fetchSites } from '../api/rebaseApi.js'; // 👈 Single unified API
+import { fetchSites } from '../api/rebaseApi.js';
 
 const Dashboard = () => {
   const [selectedSites, setSelectedSites] = useState([]);
@@ -24,46 +24,6 @@ const Dashboard = () => {
       console.error('❌ Failed to load solar sites:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const testRealAPI = async () => {
-    console.log('🔍 Testing real Rebase API endpoints...');
-    
-    const endpoints = [
-      '/sites',
-      '/solar/sites', 
-      '/assets',
-      '/projects',
-      '/installations',
-      '/plants',
-      '/portfolio',
-      '/solar/assets',
-      '/api/v1/sites',
-      '/api/v2/sites'
-    ];
-    
-    for (const endpoint of endpoints) {
-      try {
-        const response = await fetch(`/api${endpoint}`, {
-          headers: {
-            'GL-API-KEY': import.meta.env.VITE_REBASE_API_KEY,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        console.log(`📍 ${endpoint}: ${response.status} ${response.statusText}`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log(`✅ FOUND WORKING ENDPOINT: ${endpoint}`, data);
-        }
-        
-      } catch (error) {
-        console.log(`❌ ${endpoint}: ${error.message}`);
-      }
-      
-      await new Promise(r => setTimeout(r, 200)); // Rate limiting
     }
   };
 
@@ -96,22 +56,6 @@ const Dashboard = () => {
       
       {/* Combined Weather + Solar Analysis */}
       <WeatherForecastPanel selectedSites={selectedSites} />
-      
-      {/* Add this temporary button to discover real API endpoints */}
-      <button 
-        onClick={testRealAPI}
-        style={{
-          background: 'green', 
-          color: 'white', 
-          padding: '10px 20px',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          margin: '10px'
-        }}
-      >
-        🔍 Discover Real API Endpoints
-      </button>
     </div>
   );
 };
