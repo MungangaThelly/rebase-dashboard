@@ -1,0 +1,32 @@
+### Test 1: Correct Weather API Endpoint - Basic Query
+GET https://api.rebase.energy/weather/v2/query?model=DWD_ICON-EU&start-date=2025-09-20&end-date=2025-09-21&latitude=59.3&longitude=18.1&variables=Temperature,WindSpeed&output-format=json
+Authorization: 8Su5nbBnRKS_z48oNHDnQTASi2cUvUXzEjDM0KABgLs
+
+###
+
+### Test 2: Stockholm Weather with Solar Variables
+GET https://api.rebase.energy/weather/v2/query?model=DWD_ICON-EU&start-date=2025-09-20&end-date=2025-09-21&latitude=59.3&longitude=18.1&variables=Temperature,WindSpeed,SolarDownwardRadiation&output-format=json
+Authorization: 8Su5nbBnRKS_z48oNHDnQTASi2cUvUXzEjDM0KABgLs
+
+###
+
+### Test 3: Multiple Locations (as in documentation)
+GET https://api.rebase.energy/weather/v2/query?model=DWD_ICON-EU&start-date=2025-09-20&end-date=2025-09-21&latitude=60.1,61.2,59.33&longitude=17.2,13.1,18.05&variables=Temperature,WindSpeed&output-format=json
+Authorization: 8Su5nbBnRKS_z48oNHDnQTASi2cUvUXzEjDM0KABgLs
+
+###
+
+### Test 4: POST Request (for complex queries)
+POST https://api.rebase.energy/weather/v2/query
+Authorization: 8Su5nbBnRKS_z48oNHDnQTASi2cUvUXzEjDM0KABgLs
+Content-Type: application/json
+
+{
+  "model": "DWD_ICON-EU",
+  "start-date": "2025-09-20",
+  "end-date": "2025-09-21",
+  "latitude": "59.3",
+  "longitude": "18.1",
+  "variables": "Temperature, WindSpeed, SolarDownwardRadiation",
+  "output-format": "json"
+}
