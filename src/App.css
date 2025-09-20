@@ -1,0 +1,269 @@
+/* App.css - Professional Energy Dashboard Theme */
+
+/* Color Variables - Energy Industry Standard */
+:root {
+  /* Primary Colors - Professional Energy Theme */
+  --primary-bg: #0f172a;           /* Dark slate background */
+  --secondary-bg: #1e293b;        /* Secondary dark */
+  --surface-bg: #334155;          /* Card/surface background */
+  --accent-bg: #475569;           /* Accent background */
+  
+  /* Text Colors */
+  --text-primary: #f8fafc;        /* Primary white text */
+  --text-secondary: #cbd5e1;      /* Secondary gray text */
+  --text-muted: #94a3b8;          /* Muted text */
+  --text-accent: #3b82f6;         /* Blue accent text */
+  
+  /* Energy Brand Colors */
+  --energy-green: #10b981;        /* Success/positive energy */
+  --energy-blue: #3b82f6;         /* Primary brand blue */
+  --energy-yellow: #f59e0b;       /* Solar/warning */
+  --energy-orange: #f97316;       /* Alert/high energy */
+  
+  /* Border Colors */
+  --border-primary: #475569;      /* Primary borders */
+  --border-secondary: #64748b;    /* Secondary borders */
+  
+  /* Status Colors */
+  --success: #10b981;             /* Green success */
+  --warning: #f59e0b;             /* Yellow warning */
+  --error: #ef4444;               /* Red error */
+  --info: #3b82f6;                /* Blue info */
+}
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: var(--primary-bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Main layout with sidebar + content */
+.main-layout {
+  display: flex;
+  height: calc(100vh - 80px); /* Adjust if header height changes */
+  overflow: hidden;
+  background: var(--primary-bg);
+}
+
+/* Sidebar styling - Professional Energy Theme */
+.sidebar {
+  width: 280px;
+  background: var(--secondary-bg);
+  color: var(--text-primary);
+  padding: 2rem 1.5rem;
+  box-sizing: border-box;
+  border-right: 1px solid var(--border-primary);
+  min-width: 260px;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Sidebar header */
+.sidebar h2 {
+  margin-top: 0;
+  color: var(--energy-blue);
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.sidebar h3 {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Site selector styling */
+.sidebar select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--surface-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar select:hover {
+  border-color: var(--energy-blue);
+  background: var(--accent-bg);
+}
+
+.sidebar select:focus {
+  outline: none;
+  border-color: var(--energy-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sidebar option {
+  background: var(--surface-bg);
+  color: var(--text-primary);
+  padding: 0.5rem;
+}
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: var(--primary-bg);
+  color: var(--text-primary);
+  min-height: 100%;
+}
+
+/* Card components styling */
+.dashboard-card {
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.dashboard-card:hover {
+  border-color: var(--border-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card h2 {
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  letter-spacing: -0.025em;
+}
+
+.dashboard-card h3 {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+/* Metrics grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-item {
+  background: var(--surface-bg);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-primary);
+  transition: all 0.2s ease;
+}
+
+.metric-item:hover {
+  background: var(--accent-bg);
+  border-color: var(--border-secondary);
+}
+
+.metric-item strong {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.metric-value {
+  color: var(--text-primary);
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+/* Chart containers */
+.chart-container {
+  background: var(--surface-bg);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-primary);
+  margin-top: 1rem;
+}
+
+/* Status indicators */
+.status-online {
+  color: var(--success);
+}
+
+.status-warning {
+  color: var(--warning);
+}
+
+.status-error {
+  color: var(--error);
+}
+
+.status-info {
+  color: var(--info);
+}
+
+/* Loading states */
+.loading-text {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2rem;
+  font-style: italic;
+}
+
+/* Error states */
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error);
+  color: var(--error);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: unset;
+    border-right: none;
+    border-bottom: 1px solid var(--border-primary);
+    padding: 1.5rem;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0.75rem;
+  }
+  
+  .dashboard-card {
+    padding: 1rem;
+  }
+}

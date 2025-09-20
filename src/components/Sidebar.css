@@ -1,0 +1,18 @@
+.sidebar select {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  background-color: #2a2a2a;
+  color: white;
+  border: 1px solid #444;
+  border-radius: 4px;
+}
+
+@media (prefers-color-scheme: light) {
+  .sidebar select {
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #ccc;
+  }
+}

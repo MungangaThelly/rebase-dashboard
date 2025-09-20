@@ -1,0 +1,15 @@
+
+.dashboard {
+  padding: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(100, 108, 255, 0.3);
+  padding-bottom: 0.5rem;
+  color: inherit;
+}
