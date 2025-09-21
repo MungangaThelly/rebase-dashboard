@@ -1,7 +1,6 @@
 import React from 'react';
 
 const WeatherForecastPanel = ({ weatherData, siteLocation }) => {
-  console.log('🌤️ WeatherForecastPanel props:', { weatherData, siteLocation });
 
   // Simple safe render - no complex logic
   if (!weatherData) {

@@ -5,9 +5,6 @@ const API_KEY = import.meta.env.VITE_REBASE_API_KEY;
 const API_BASE_URL = '/api';
 const FORCE_MOCK = true;
 
-console.log('🔗 API Mode:', FORCE_MOCK ? 'MOCK DATA' : 'REAL API');
-console.log('🔗 API Base URL:', API_BASE_URL);
-console.log('🔑 API Key present:', !!API_KEY);
 
 // Cache system
 const apiCache = new Map();
@@ -20,7 +17,6 @@ function getCacheKey(url) {
 function getCachedData(key) {
   const cached = apiCache.get(key);
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-    console.log('📋 Using cached data for:', key);
     return cached.data;
   }
   return null;
@@ -191,7 +187,6 @@ export async function fetchSites() {
   if (cached) return cached;
 
   if (FORCE_MOCK) {
-    console.log('🎯 Using MOCK sites data');
     setCachedData(cacheKey, MOCK_SITES);
     return MOCK_SITES;
   }
@@ -222,7 +217,6 @@ export async function fetchSites() {
 
 export async function fetchLatestForecast(siteId) {
   // Mock forecast with realistic solar production curves
-  console.log('🎯 Generating MOCK forecast for site:', siteId);
   
   const now = new Date();
   const site = MOCK_SITES.find(s => s.id === siteId);
@@ -270,7 +264,6 @@ export async function fetchWeatherForecast(latitude, longitude) {
 
   // 🎯 FORCE MOCK MODE - This should bypass API calls entirely
   if (FORCE_MOCK) {
-    console.log('🎯 FORCE_MOCK enabled - skipping API call, using mock data');
     const result = {
       source: 'mock',
       forecasts: generateMockWeatherData(latitude, longitude),
@@ -356,7 +349,6 @@ export async function fetchWeatherForecast(latitude, longitude) {
 
 // Make sure this function exists
 function generateMockWeatherData(lat, lon) {
-  console.log(`🎯 Generating mock weather data for: ${lat}, ${lon}`);
   
   const forecasts = [];
   const baseTime = new Date();
@@ -374,7 +366,6 @@ function generateMockWeatherData(lat, lon) {
     });
   }
   
-  console.log(`✅ Generated ${forecasts.length} mock weather forecasts`);
   return forecasts;
 }
 
@@ -384,7 +375,6 @@ function generateMockWeatherData(lat, lon) {
 
 export async function fetchSiteWithWeather(siteId) {
   try {
-    console.log('🔄 Loading combined data for site:', siteId);
     
     const sites = await fetchSites();
     const site = sites.find(s => s.id === siteId);

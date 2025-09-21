@@ -12,10 +12,8 @@ const SiteSelector = ({ selectedSite, onSiteChange }) => {
       try {
         setLoading(true);
         setError(null);
-        console.log('🔄 SiteSelector: Loading sites...');
         
         const sitesData = await fetchSites();
-        console.log('✅ SiteSelector: Sites loaded:', sitesData);
         
         // Ensure we have an array
         if (Array.isArray(sitesData)) {
