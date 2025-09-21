@@ -1,69 +1,84 @@
 import axios from 'axios';
 
+// Environment configuration
 const API_KEY = import.meta.env.VITE_REBASE_API_KEY;
-
-// FORCE MOCK MODE while we figure out the real API
-const FORCE_MOCK = false; // 👈 Keep this true for now
-
-const BASE_URL = import.meta.env.DEV && !FORCE_MOCK
-  ? '/api'  
-  : 'https://api.rebase.energy';
+const API_BASE_URL = '/api';
+const FORCE_MOCK = true;
 
 console.log('🔗 API Mode:', FORCE_MOCK ? 'MOCK DATA' : 'REAL API');
-console.log('🔗 API Base URL:', BASE_URL);
+console.log('🔗 API Base URL:', API_BASE_URL);
 console.log('🔑 API Key present:', !!API_KEY);
 
-// Enhanced mock sites with more realistic data
+// Cache system
+const apiCache = new Map();
+const CACHE_DURATION = 30000;
+
+function getCacheKey(url) {
+  return url;
+}
+
+function getCachedData(key) {
+  const cached = apiCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    console.log('📋 Using cached data for:', key);
+    return cached.data;
+  }
+  return null;
+}
+
+function setCachedData(key, data) {
+  apiCache.set(key, {
+    data,
+    timestamp: Date.now()
+  });
+}
+
+// Mock data
 const MOCK_SITES = [
   {
     id: 'se-stockholm-alpha',
     name: 'Stockholm Solar Alpha',
+    type: 'solar',
+    country: 'Sweden',
     location: { latitude: 59.3293, longitude: 18.0686 },
-    capacity: 50.2,
-    type: 'utility-scale',
-    status: 'operational',
-    commissioned: '2023-06-15',
-    technology: 'crystalline-si'
+    capacity: 125.5,
+    description: 'Large-scale solar installation in Stockholm region'
   },
   {
-    id: 'se-stockholm-beta', 
-    name: 'Stockholm Solar Beta',
-    location: { latitude: 59.3498, longitude: 18.0973 },
-    capacity: 25.8,
-    type: 'commercial',
-    status: 'operational',
-    commissioned: '2023-09-20',
-    technology: 'thin-film'
+    id: 'de-bavaria-wind',
+    name: 'Bavaria Wind Farm',
+    type: 'wind',
+    country: 'Germany',
+    location: { latitude: 48.1351, longitude: 11.5820 },
+    capacity: 89.2,
+    description: 'Offshore wind farm in Bavaria'
   },
   {
-    id: 'se-gothenburg-green',
-    name: 'Gothenburg Green Energy Park',
-    location: { latitude: 57.7089, longitude: 11.9746 },
-    capacity: 35.4,
-    type: 'utility-scale',
-    status: 'operational',
-    commissioned: '2024-01-10',
-    technology: 'bifacial'
+    id: 'es-andalusia-solar',
+    name: 'Andalusia Solar Complex',
+    type: 'solar',
+    country: 'Spain',
+    location: { latitude: 37.3891, longitude: -5.9845 },
+    capacity: 156.8,
+    description: 'Major solar complex in southern Spain'
   },
   {
-    id: 'se-malmo-renewable',
-    name: 'Malmö Renewable Energy Hub',
-    location: { latitude: 55.6050, longitude: 13.0038 },
-    capacity: 42.1,
-    type: 'industrial',
-    status: 'operational',
-    commissioned: '2023-11-08',
-    technology: 'crystalline-si'
+    id: 'fr-normandy-wind',
+    name: 'Normandy Coastal Wind',
+    type: 'wind',
+    country: 'France',
+    location: { latitude: 49.1829, longitude: -0.3707 },
+    capacity: 78.3,
+    description: 'Coastal wind farm in Normandy'
   },
   {
-    id: 'se-uppsala-research',
-    name: 'Uppsala Solar Research Facility',
-    location: { latitude: 59.8586, longitude: 17.6389 },
-    capacity: 18.7,
-    type: 'research',
-    status: 'operational',
-    commissioned: '2024-03-15',
-    technology: 'perovskite-tandem'
+    id: 'it-sicily-solar',
+    name: 'Sicily Solar Grid',
+    type: 'solar',
+    country: 'Italy',
+    location: { latitude: 37.5079, longitude: 15.0830 },
+    capacity: 92.1,
+    description: 'Distributed solar grid across Sicily'
   }
 ];
 
@@ -171,35 +186,36 @@ export async function checkAPIDocumentation() {
 // ================================
 
 export async function fetchSites() {
-  // Use mock data for now
+  const cacheKey = 'sites';
+  const cached = getCachedData(cacheKey);
+  if (cached) return cached;
+
   if (FORCE_MOCK) {
-    console.log('🎯 Using MOCK sites data:', MOCK_SITES.length, 'sites');
+    console.log('🎯 Using MOCK sites data');
+    setCachedData(cacheKey, MOCK_SITES);
     return MOCK_SITES;
   }
 
-  // When we know the real endpoint, we'll update this
   try {
-    console.log('🔄 Fetching sites from:', `${BASE_URL}/sites`);
+    console.log('🔄 Fetching sites from:', `${API_BASE_URL}/sites`);
+    const response = await fetch(`${API_BASE_URL}/sites`);
     
-    const response = await fetch(`${BASE_URL}/sites`, {
-      headers: {
-        'GL-API-KEY': API_KEY,
-        'Content-Type': 'application/json'
-      },
-    });
-
     console.log('📡 Sites API Response:', response.status, response.statusText);
-
+    
     if (!response.ok) {
-      throw new Error(`Sites API Error: ${response.status}`);
+      console.log('⚠️ Sites API failed, using mock data: Sites API Error:', response.status);
+      setCachedData(cacheKey, MOCK_SITES);
+      return MOCK_SITES;
     }
 
     const data = await response.json();
-    console.log('✅ Sites loaded from API:', data?.length || 0);
+    console.log('✅ Sites data received:', data);
+    setCachedData(cacheKey, data);
     return data;
     
   } catch (error) {
-    console.warn('⚠️ Sites API failed, using mock data:', error.message);
+    console.log('⚠️ Sites API failed, using mock data:', error.message);
+    setCachedData(cacheKey, MOCK_SITES);
     return MOCK_SITES;
   }
 }
@@ -247,103 +263,119 @@ export async function fetchLatestForecast(siteId) {
 // WEATHER API (Real API - try this)
 // ================================
 
-export async function fetchWeatherForecast(latitude, longitude, days = 2) {
-  const today = new Date();
-  const endDate = new Date(today);
-  endDate.setDate(today.getDate() + days);
+export async function fetchWeatherForecast(latitude, longitude) {
+  const cacheKey = `weather_${latitude}_${longitude}`;
+  const cached = getCachedData(cacheKey);
+  if (cached) return cached;
 
-  const startDateStr = today.toISOString().split('T')[0];
-  const endDateStr = endDate.toISOString().split('T')[0];
+  // 🎯 FORCE MOCK MODE - This should bypass API calls entirely
+  if (FORCE_MOCK) {
+    console.log('🎯 FORCE_MOCK enabled - skipping API call, using mock data');
+    const result = {
+      source: 'mock',
+      forecasts: generateMockWeatherData(latitude, longitude),
+      error: 'Mock mode enabled'
+    };
+    setCachedData(cacheKey, result);
+    return result;
+  }
 
-  const params = new URLSearchParams({
-    model: 'DWD_ICON-EU',
-    'start-date': startDateStr,
-    'end-date': endDateStr,
-    latitude: latitude.toString(),
-    longitude: longitude.toString(),
-    variables: 'Temperature, WindSpeed, SolarDownwardRadiation, CloudCover, RelativeHumidity',
-    'output-format': 'json'
-  });
-
+  // This code should NOT run when FORCE_MOCK = true
   try {
-    let url = `${BASE_URL}/weather/v2/query?${params}`;
-    console.log('🔄 Fetching weather from:', url);
+    console.log(`🔄 Fetching weather for: ${latitude}, ${longitude}`);
+    console.log('🔑 API Key check:', API_KEY ? 'Present' : 'Missing');
     
-    const response = await fetch(url, {
+    // Use shorter timeframe to avoid 413 error
+    const today = new Date();
+    const endDate = new Date(today);
+    endDate.setHours(today.getHours() + 6); // Only 6 hours
+    
+    const startDate = today.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+    
+    // Minimal variables to reduce request size
+    const variables = ['Temperature', 'WindSpeed', 'SolarDownwardRadiation'].join(',');
+
+    const params = new URLSearchParams({
+      'model': 'DWD_ICON-EU',
+      'start-date': startDate,
+      'end-date': endDateStr,
+      'latitude': latitude.toString(),
+      'longitude': longitude.toString(),
+      'variables': variables,
+      'output-format': 'json'
+    });
+
+    const proxyUrl = `/api/weather/v2/query?${params}`;
+    console.log(`🔄 Fetching weather from: ${proxyUrl}`);
+
+    let response = await fetch(proxyUrl, {
       headers: {
-        'Authorization': API_KEY,
+        'GL-API-KEY': API_KEY,
+        'Accept': 'application/json',
         'Content-Type': 'application/json'
       }
     });
 
-    if (!response.ok && BASE_URL === '/api') {
-      // Try direct API
-      console.log('🔄 Proxy failed, trying direct API...');
-      url = `https://api.rebase.energy/weather/v2/query?${params}`;
-      
-      const directResponse = await fetch(url, {
-        headers: {
-          'Authorization': API_KEY,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!directResponse.ok) {
-        throw new Error(`Weather API Error: ${directResponse.status}`);
-      }
-      
-      const data = await directResponse.json();
-      console.log('✅ Weather data loaded from direct API');
-      return processWeatherData(data, latitude, longitude);
-    }
+    console.log('📡 Response status:', response.status);
+    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
+      console.log('❌ API request failed with status:', response.status);
+      const errorText = await response.text();
+      console.log('❌ Error response:', errorText);
       throw new Error(`Weather API Error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('✅ Weather data loaded via proxy');
-    return processWeatherData(data, latitude, longitude);
+    console.log('✅ Weather data received:', data);
+
+    const result = {
+      source: 'real',
+      forecasts: transformWeatherData(data),
+      rawData: data
+    };
+
+    setCachedData(cacheKey, result);
+    return result;
 
   } catch (error) {
-    console.error('💥 Weather API Request Failed:', error);
-    
-    // Generate mock weather data as fallback
+    console.log('💥 Weather API Request Failed:', error);
     console.log('🎯 Using MOCK weather data for location:', latitude, longitude);
-    return generateMockWeatherData(latitude, longitude);
+    
+    const result = {
+      source: 'mock',
+      forecasts: generateMockWeatherData(latitude, longitude),
+      error: error.message
+    };
+
+    setCachedData(cacheKey, result);
+    return result;
   }
 }
 
-function generateMockWeatherData(latitude, longitude) {
-  const now = new Date();
-  const timeseries = Array.from({ length: 48 }, (_, i) => {
-    const time = new Date(now.getTime() + i * 3600000); // Hourly intervals
-    const hour = time.getHours();
+// Make sure this function exists
+function generateMockWeatherData(lat, lon) {
+  console.log(`🎯 Generating mock weather data for: ${lat}, ${lon}`);
+  
+  const forecasts = [];
+  const baseTime = new Date();
+  
+  for (let i = 0; i < 24; i++) {
+    const timestamp = new Date(baseTime.getTime() + i * 60 * 60 * 1000);
     
-    return {
-      timestamp: time.toISOString(),
-      temperature: 10 + 15 * Math.sin(((hour - 6) / 12) * Math.PI) + Math.random() * 3,
-      windSpeed: 3 + Math.random() * 8,
-      solarRadiation: hour >= 6 && hour <= 18 ? 100 + Math.random() * 700 : 0,
-      cloudCover: 20 + Math.random() * 60,
-      humidity: 60 + Math.random() * 30,
-      referenceTime: now.toISOString()
-    };
-  });
-
-  return {
-    location: { latitude, longitude },
-    model: 'Mock Weather Model',
-    forecast_period: {
-      start: timeseries[0].timestamp,
-      end: timeseries[timeseries.length - 1].timestamp,
-      hours: timeseries.length
-    },
-    timeseries: timeseries,
-    summary: generateWeatherSummary(timeseries),
-    research_ready: true,
-    last_updated: new Date().toISOString()
-  };
+    forecasts.push({
+      timestamp: timestamp.toISOString(),
+      temperature: 15 + Math.sin(i * Math.PI / 12) * 5 + Math.random() * 2,
+      windSpeed: 3 + Math.random() * 4,
+      solarRadiation: Math.max(0, 400 * Math.sin((i - 6) * Math.PI / 12) + Math.random() * 100),
+      cloudCover: Math.random() * 80,
+      humidity: 60 + Math.random() * 30
+    });
+  }
+  
+  console.log(`✅ Generated ${forecasts.length} mock weather forecasts`);
+  return forecasts;
 }
 
 // ================================
@@ -490,23 +522,39 @@ function generateWeatherSummary(timeSeries) {
   };
 }
 
-export async function checkAPIStatus() {
-  return {
-    timestamp: new Date().toISOString(),
-    mode: 'MOCK + REAL_WEATHER',
-    base_url: BASE_URL,
-    environment: import.meta.env.DEV ? 'development' : 'production',
-    proxy_enabled: !FORCE_MOCK && import.meta.env.DEV,
-    mock_sites_count: MOCK_SITES.length,
-    combined_ready: true,
-    features: {
-      sites: 'mock_data',
-      solar_forecasts: 'mock_data',
-      weather: 'real_api_with_fallback',
-      correlations: 'available',
-      export: 'available'
-    }
-  };
+export async function checkAPIStatus(apiUrl, name) {
+  try {
+    console.log(`🔍 Checking API status for ${name}: ${apiUrl}`);
+    
+    // Use API_BASE_URL instead of BASE_URL
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'European-Energy-API-Discovery/1.0'
+      }
+    });
+
+    const status = response.status;
+    console.log(`📡 ${name} API status: ${status}`);
+
+    return {
+      name,
+      url: apiUrl,
+      status: status,
+      available: status >= 200 && status < 300,
+      error: null
+    };
+  } catch (error) {
+    console.log(`❌ ${name} API check failed:`, error.message);
+    return {
+      name,
+      url: apiUrl,
+      status: null,
+      available: false,
+      error: error.message
+    };
+  }
 }
 
 export async function exportCombinedData(siteId, format = 'csv') {

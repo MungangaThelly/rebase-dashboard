@@ -1,173 +1,136 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  fetchMultipleSitesWithWeather, 
-  exportCombinedData,
-  checkAPIStatus 
-} from '../api/rebaseApi.js';
-import './WeatherForecastPanel.css';
+import React from 'react';
 
-export function WeatherForecastPanel({ selectedSites }) {
-  const [combinedData, setCombinedData] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [exportFormat, setExportFormat] = useState('csv');
-  const [apiStatus, setApiStatus] = useState(null);
+const WeatherForecastPanel = ({ weatherData, siteLocation }) => {
+  console.log('🌤️ WeatherForecastPanel props:', { weatherData, siteLocation });
 
-  useEffect(() => {
-    checkAPIs();
-  }, []);
-
-  useEffect(() => {
-    if (selectedSites.length > 0) {
-      loadCombinedData();
-    }
-  }, [selectedSites]);
-
-  const checkAPIs = async () => {
-    try {
-      const status = await checkAPIStatus();
-      setApiStatus(status);
-    } catch (error) {
-      console.error('API status check failed:', error);
-    }
-  };
-
-  const loadCombinedData = async () => {
-    setLoading(true);
-    try {
-      const siteIds = selectedSites.map(site => site.id);
-      const data = await fetchMultipleSitesWithWeather(siteIds, 3);
-      setCombinedData(data.sites_data);
-      console.log('✅ Combined solar + weather data loaded:', data);
-    } catch (error) {
-      console.error('❌ Failed to load combined data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleExport = async (siteId) => {
-    try {
-      const exportData = await exportCombinedData(siteId, exportFormat);
-      
-      const blob = new Blob([exportData], { 
-        type: exportFormat === 'csv' ? 'text/csv' : 'application/json' 
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `combined_solar_weather_${siteId}_${new Date().toISOString().split('T')[0]}.${exportFormat}`;
-      link.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Export failed:', error);
-    }
-  };
-
-  if (loading) {
-    return <div className="loading">🌦️ Loading combined solar + weather data...</div>;
+  // Simple safe render - no complex logic
+  if (!weatherData) {
+    return (
+      <div style={{ 
+        background: 'white', 
+        padding: '20px', 
+        borderRadius: '6px', 
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        marginBottom: '20px'
+      }}>
+        <h3 style={{ color: '#4b5563', marginTop: 0 }}>🌤️ Weather Forecast</h3>
+        <p style={{ color: '#6b7280' }}>Loading weather data...</p>
+      </div>
+    );
   }
 
+  // Extract forecasts with maximum safety
+  let forecasts = [];
+  try {
+    if (weatherData && weatherData.forecasts && Array.isArray(weatherData.forecasts)) {
+      forecasts = weatherData.forecasts;
+    } else if (Array.isArray(weatherData)) {
+      forecasts = weatherData;
+    }
+  } catch (error) {
+    console.log('Error extracting forecasts:', error);
+    forecasts = [];
+  }
+
+  console.log('🌤️ Extracted forecasts count:', forecasts ? forecasts.length : 0);
+
+  // Always show something, even if no forecasts
+  const currentWeather = (forecasts && forecasts.length > 0) ? forecasts[0] : {};
+  
+  const safeGet = (obj, key, fallback = 'N/A') => {
+    try {
+      return (obj && typeof obj[key] === 'number') ? obj[key].toFixed(1) : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
   return (
-    <div className="weather-forecast-panel">
-      <h3>🌦️ Combined Solar + Weather Analysis</h3>
-      
-      {/* API Status */}
-      {apiStatus && (
-        <div className="api-status">
-          <div className={apiStatus.combined_ready ? 'status-success' : 'status-warning'}>
-            {apiStatus.combined_ready ? '✅' : '⚠️'} 
-            <strong>API Status:</strong> Solar {apiStatus.solar_api ? '✅' : '❌'} | Weather {apiStatus.weather_api ? '✅' : '❌'}
+    <div style={{ 
+      background: 'white', 
+      padding: '20px', 
+      borderRadius: '6px', 
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+      marginBottom: '20px'
+    }}>
+      <h3 style={{ color: '#4b5563', marginTop: 0 }}>
+        🌤️ Weather Forecast
+        {siteLocation && (
+          <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#6b7280' }}>
+            {' '}({siteLocation.latitude}°N, {siteLocation.longitude}°E)
+          </span>
+        )}
+      </h3>
+
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', 
+        gap: '12px',
+        marginBottom: '16px'
+      }}>
+        <div style={{ textAlign: 'center', padding: '12px', background: '#f8fafc', borderRadius: '6px' }}>
+          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
+            {safeGet(currentWeather, 'temperature')}°C
+          </div>
+          <div style={{ fontSize: '12px', color: '#6b7280' }}>Temperature</div>
+        </div>
+
+        <div style={{ textAlign: 'center', padding: '12px', background: '#f8fafc', borderRadius: '6px' }}>
+          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
+            {safeGet(currentWeather, 'windSpeed')} m/s
+          </div>
+          <div style={{ fontSize: '12px', color: '#6b7280' }}>Wind</div>
+        </div>
+
+        <div style={{ textAlign: 'center', padding: '12px', background: '#f8fafc', borderRadius: '6px' }}>
+          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
+            {safeGet(currentWeather, 'solarRadiation')} W/m²
+          </div>
+          <div style={{ fontSize: '12px', color: '#6b7280' }}>Solar</div>
+        </div>
+      </div>
+
+      <div style={{ 
+        padding: '12px', 
+        background: weatherData.source === 'mock' ? '#fef3c7' : '#f0fdf4', 
+        borderRadius: '4px', 
+        border: `1px solid ${weatherData.source === 'mock' ? '#f59e0b' : '#bbf7d0'}`
+      }}>
+        <p style={{ margin: 0, fontSize: '14px', color: weatherData.source === 'mock' ? '#92400e' : '#166534' }}>
+          {weatherData.source === 'mock' ? 
+            '🎯 Mock weather data (demonstration mode)' : 
+            '✅ Real weather data'
+          }
+          <br />
+          📊 {forecasts ? forecasts.length : 0} forecasts available
+        </p>
+      </div>
+
+      {forecasts && forecasts.length > 1 && (
+        <div style={{ marginTop: '16px' }}>
+          <h4 style={{ color: '#4b5563', marginBottom: '8px', fontSize: '14px' }}>📈 Next 6 Hours</h4>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(6, 1fr)', 
+            gap: '6px'
+          }}>
+            {forecasts.slice(0, 6).map((forecast, index) => (
+              <div key={index} style={{ 
+                padding: '6px', 
+                background: '#f8fafc', 
+                borderRadius: '4px',
+                textAlign: 'center',
+                fontSize: '10px'
+              }}>
+                <div style={{ fontWeight: 'bold' }}>+{index}h</div>
+                <div>{safeGet(forecast, 'temperature')}°C</div>
+              </div>
+            ))}
           </div>
         </div>
       )}
-      
-      <div className="export-controls">
-        <label>Export Format:</label>
-        <select 
-          value={exportFormat} 
-          onChange={(e) => setExportFormat(e.target.value)}
-        >
-          <option value="csv">CSV (Excel/Python/R)</option>
-          <option value="json">JSON (Web/APIs)</option>
-          <option value="matlab">MATLAB (.m file)</option>
-        </select>
-      </div>
-
-      {Object.entries(combinedData).map(([siteId, data]) => {
-        if (data.error) {
-          return (
-            <div key={siteId} className="site-error">
-              <h4>❌ {data.site?.name || siteId}</h4>
-              <p>Error: {data.error}</p>
-            </div>
-          );
-        }
-
-        const { site, weather_forecast, solar_forecast } = data;
-        
-        return (
-          <div key={siteId} className="weather-site-forecast">
-            <h4>📍 {site?.name || siteId}</h4>
-            <p className="location">
-              📍 {site.location.latitude.toFixed(3)}, {site.location.longitude.toFixed(3)}
-            </p>
-            
-            <div className="combined-summary">
-              <div className="summary-grid">
-                <div className="metric">
-                  <strong>🌡️ Weather</strong>
-                  <div>Temp: {weather_forecast.summary.temperature.min.toFixed(1)}°C - {weather_forecast.summary.temperature.max.toFixed(1)}°C</div>
-                  <div>Wind: {weather_forecast.summary.windSpeed.avg.toFixed(1)} m/s avg</div>
-                </div>
-                <div className="metric">
-                  <strong>☀️ Solar Data</strong>
-                  <div>Site: {site.type || 'Solar Installation'}</div>
-                  <div>Forecast: {solar_forecast ? 'Available' : 'Loading...'}</div>
-                </div>
-                <div className="metric">
-                  <strong>🔬 Research</strong>
-                  <div>{weather_forecast.forecast_period.hours} weather points</div>
-                  <div>Correlation ready: ✅</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="forecast-timeline">
-              <h5>📈 Next 24 Hours</h5>
-              <div className="timeline-grid">
-                {weather_forecast.timeseries.slice(0, 24).map((point, index) => (
-                  <div key={index} className="timeline-point">
-                    <div className="time">{new Date(point.timestamp).getHours()}h</div>
-                    <div className="temp">{point.temperature?.toFixed(1)}°C</div>
-                    <div className="wind">{point.windSpeed?.toFixed(1)}m/s</div>
-                    <div className="solar">{point.solarRadiation?.toFixed(0)}W/m²</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="research-actions">
-              <button 
-                onClick={() => handleExport(siteId)}
-                className="export-btn"
-              >
-                📊 Export Combined Data ({exportFormat.toUpperCase()})
-              </button>
-              
-              <div className="research-applications">
-                <strong>🔬 Research Applications:</strong>
-                <ul>
-                  <li>Solar production vs weather correlation</li>
-                  <li>Cloud impact on generation efficiency</li>
-                  <li>Wind patterns and panel cooling effects</li>
-                  <li>Seasonal performance analysis</li>
-                  <li>Grid integration forecasting</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        );
-      })}
     </div>
   );
-}
+};
+
+export default WeatherForecastPanel;
