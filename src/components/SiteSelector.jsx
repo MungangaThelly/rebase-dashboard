@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchSites } from '../api/rebaseApi';
+import { fetchEnergySites } from '../api/rebaseApi';
 import './SiteSelector.css'; // 👈 Add this line
 
 const SiteSelector = ({ selectedSite, onSiteChange }) => {
@@ -13,7 +13,7 @@ const SiteSelector = ({ selectedSite, onSiteChange }) => {
         setLoading(true);
         setError(null);
         
-        const sitesData = await fetchSites();
+        const sitesData = await fetchEnergySites();
         
         // Ensure we have an array
         if (Array.isArray(sitesData)) {

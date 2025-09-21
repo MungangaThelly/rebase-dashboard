@@ -1,25 +1,33 @@
 import React, { useState, useEffect } from 'react';
+import { fetchEnergySites, fetchEnergyProduction, fetchWeatherData, testEnergySubEndpoints, testAllEndpoints, debugApiConfig } from '../api/rebaseApi';
+import { fetchElectricityPrices, fetchSolarGeneration, fetchWindGeneration } from '../api/entsoeApi';
+import { fetchCarbonIntensity, fetchPowerBreakdown } from '../api/electricityMapApi';
+import { fetchCurrentWeather } from '../api/openWeatherApi';
+import CarbonIntensityPanel from './CarbonIntensityPanel';
+import ElectricityPricesPanel from './ElectricityPricesPanel';
+import MultiWeatherPanel from './MultiWeatherPanel';
+import GridGenerationPanel from './GridGenerationPanel';
 import SiteSelector from './SiteSelector';
-// Try default import, fallback to named import
-import WeatherForecastPanel from './WeatherForecastPanel';
-import ForecastChart from './ForecastChart';
-import { fetchSites, fetchSiteWithWeather, exportCombinedData } from '../api/rebaseApi';
-import { discoverAllEuropeanEnergyAPIs } from '../api/europeanEnergyApi';
-import './Dashboard.css';
+import './EnhancedDashboard.css';
 
-const Dashboard = () => {
-  const [sites, setSites] = useState([]);
+const EnhancedDashboard = () => {
   const [selectedSite, setSelectedSite] = useState(null);
-  const [siteData, setSiteData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  // European API Discovery state
-  const [apiDiscovery, setApiDiscovery] = useState({
-    results: null,
-    loading: false,
-    lastTested: null,
-    expanded: false
+  const [sites, setSites] = useState([]);
+  const [dashboardData, setDashboardData] = useState({
+    carbonIntensity: null,
+    electricityPrices: null,
+    powerBreakdown: null,
+    solarGeneration: null,
+    rebaseWeather: null,
+    openWeather: null,
+    loading: {
+      carbon: false,
+      prices: false,
+      power: false,
+      solar: false,
+      weather: false
+    },
+    lastUpdated: null
   });
 
   // Load sites on component mount
@@ -27,335 +35,254 @@ const Dashboard = () => {
     loadSites();
   }, []);
 
-  // Load site data when selection changes
+  // Load all API data when site is selected
   useEffect(() => {
-    if (selectedSite) {
-      loadSiteData(selectedSite.id);
+    if (selectedSite?.location) {
+      loadAllAPIData(selectedSite);
     }
   }, [selectedSite]);
 
+  // Test all APIs on mount - UPDATED
+  useEffect(() => {
+    const testAllAPIs = async () => {
+      console.log('🧪 Testing all APIs...');
+      
+      // Debug API config first
+      debugApiConfig();
+      
+      // Test all Rebase endpoints
+      const rebaseResults = await testAllEndpoints();
+      console.log('🎯 Rebase test results:', rebaseResults);
+      
+      // Test other APIs
+      try {
+        const prices = await fetchElectricityPrices();
+        console.log('⚡ Electricity prices:', prices);
+      } catch (error) {
+        console.log('❌ ENTSO-E error:', error.message);
+      }
+      
+      try {
+        const carbon = await fetchCarbonIntensity('SE');
+        console.log('🌿 Carbon intensity:', carbon);
+      } catch (error) {
+        console.log('❌ ElectricityMap error:', error.message);
+      }
+      
+      try {
+        const weather = await fetchCurrentWeather(59.3293, 18.0686);
+        console.log('☁️ Weather:', weather);
+      } catch (error) {
+        console.log('❌ OpenWeather error:', error.message);
+      }
+    };
+    
+    testAllAPIs();
+  }, []);
+
+  // Test energy sub-endpoints - SIMPLIFIED
+  useEffect(() => {
+    const testEnergyPaths = async () => {
+      console.log('🧪 Testing energy sub-endpoints...');
+      try {
+        const results = await testEnergySubEndpoints();
+        console.log('🎯 Energy sub-endpoint results:', results);
+        
+        // Look for successful endpoints
+        const workingEndpoints = Object.entries(results)
+          .filter(([path, result]) => result.success)
+          .map(([path, result]) => ({ path, ...result }));
+        
+        if (workingEndpoints.length > 0) {
+          console.log('🎉 Found working energy endpoints:', workingEndpoints);
+        }
+      } catch (error) {
+        console.error('❌ Error testing energy endpoints:', error);
+      }
+    };
+    
+    testEnergyPaths();
+  }, []);
+
   const loadSites = async () => {
     try {
-      setLoading(true);
-      const sitesData = await fetchSites();
+      const sitesData = await fetchEnergySites(); // UPDATED
       setSites(sitesData);
       if (sitesData.length > 0) {
         setSelectedSite(sitesData[0]);
       }
-    } catch (err) {
-      console.error('Failed to load sites:', err);
-      setError('Failed to load renewable energy sites');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadSiteData = async (siteId) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await fetchSiteWithWeather(siteId);
-      setSiteData(data);
-    } catch (err) {
-      console.error('Failed to load site data:', err);
-      setError('Failed to load site and weather data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSiteChange = (site) => {
-    setSelectedSite(site);
-    setSiteData(null);
-  };
-
-  const handleExportData = async (format = 'csv') => {
-    if (!selectedSite) return;
-    
-    try {
-      const data = await exportCombinedData(selectedSite.id, format);
-      
-      // Create download
-      const blob = new Blob([data], { 
-        type: format === 'csv' ? 'text/csv' : 'application/json' 
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${selectedSite.id}_combined_data.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      console.log(`✅ Exported ${selectedSite.name} data as ${format.toUpperCase()}`);
-    } catch (err) {
-      console.error('Export failed:', err);
-      setError('Failed to export data');
-    }
-  };
-
-  // European API Discovery function
-  const discoverEuropeanAPIs = async () => {
-    setApiDiscovery(prev => ({ ...prev, loading: true, results: null }));
-    
-    try {
-      console.log('🌍 Starting European renewable energy API discovery...');
-      const discoveryResults = await discoverAllEuropeanEnergyAPIs();
-      
-      setApiDiscovery({
-        results: discoveryResults,
-        loading: false,
-        lastTested: new Date().toISOString(),
-        expanded: true
-      });
-      
-      console.log('✅ API Discovery completed:', discoveryResults);
-      
     } catch (error) {
-      console.error('❌ API Discovery failed:', error);
-      setApiDiscovery({
-        results: { 
-          success: false, 
-          error: error.message,
-          summary: { totalAPIs: 0, successfulProviders: 0 }
-        },
-        loading: false,
-        lastTested: new Date().toISOString(),
-        expanded: true
-      });
+      console.error('Error loading sites:', error);
     }
   };
 
-  const toggleDiscoveryExpanded = () => {
-    setApiDiscovery(prev => ({ ...prev, expanded: !prev.expanded }));
+  const loadAllAPIData = async (site) => {
+    const { latitude, longitude } = site.location;
+    
+    // Set all loading states
+    setDashboardData(prev => ({
+      ...prev,
+      loading: {
+        carbon: true,
+        prices: true,
+        power: true,
+        solar: true,
+        weather: true
+      }
+    }));
+
+    // Load data from all APIs in parallel - UPDATED
+    const apiPromises = [
+      fetchCarbonIntensity('SE').then(data => ({ carbon: data })),
+      fetchElectricityPrices().then(data => ({ prices: data })),
+      fetchPowerBreakdown('SE').then(data => ({ power: data })),
+      fetchSolarGeneration().then(data => ({ solar: data })),
+      fetchWeatherData(latitude, longitude).then(data => ({ rebaseWeather: data })), // UPDATED
+      fetchCurrentWeather(latitude, longitude).then(data => ({ openWeather: data })) // UPDATED
+    ];
+
+    // Process results as they come in
+    try {
+      const results = await Promise.allSettled(apiPromises);
+      
+      let newData = {
+        carbonIntensity: null,
+        electricityPrices: null,
+        powerBreakdown: null,
+        solarGeneration: null,
+        rebaseWeather: null,
+        openWeather: null,
+        loading: {
+          carbon: false,
+          prices: false,
+          power: false,
+          solar: false,
+          weather: false
+        },
+        lastUpdated: new Date().toISOString()
+      };
+
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          const data = result.value;
+          if (data.carbon) newData.carbonIntensity = data.carbon;
+          if (data.prices) newData.electricityPrices = data.prices;
+          if (data.power) newData.powerBreakdown = data.power;
+          if (data.solar) newData.solarGeneration = data.solar;
+          if (data.rebaseWeather) newData.rebaseWeather = data.rebaseWeather;
+          if (data.openWeather) newData.openWeather = data.openWeather;
+        }
+      });
+
+      setDashboardData(newData);
+
+    } catch (error) {
+      console.error('Error loading API data:', error);
+      setDashboardData(prev => ({
+        ...prev,
+        loading: {
+          carbon: false,
+          prices: false,
+          power: false,
+          solar: false,
+          weather: false
+        }
+      }));
+    }
   };
 
-  if (loading && !sites.length) {
-    return (
-      <div className="dashboard">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>Loading renewable energy research platform...</p>
-        </div>
-      </div>
-    );
-  }
+  const refreshAllData = () => {
+    if (selectedSite) {
+      loadAllAPIData(selectedSite);
+    }
+  };
 
   return (
-    <div className="dashboard">
-      <header className="dashboard-header">
-        <h1>🌞 Renewable Energy Research Platform</h1>
-        <p>Real-time weather data integration with Swedish solar farm analysis</p>
-      </header>
-
-      {error && (
-        <div className="error-banner">
-          <span>⚠️ {error}</span>
-          <button onClick={() => setError(null)}>✕</button>
-        </div>
-      )}
-
-      {/* European API Discovery Section */}
-      <div className="api-discovery-section">
-        <div className="section-header" onClick={toggleDiscoveryExpanded}>
-          <h3>🌍 European Real Data Discovery</h3>
-          <div className="section-controls">
-            <button 
-              onClick={discoverEuropeanAPIs}
-              disabled={apiDiscovery.loading}
-              className="discovery-button"
-            >
-              {apiDiscovery.loading ? '🔄 Discovering...' : '🔍 Discover European Energy APIs'}
-            </button>
-            <button 
-              onClick={toggleDiscoveryExpanded}
-              className="expand-button"
-            >
-              {apiDiscovery.expanded ? '📦 Collapse' : '📋 View Results'}
-            </button>
-          </div>
-        </div>
-
-        {apiDiscovery.expanded && apiDiscovery.results && (
-          <div className="discovery-results">
-            {/* Summary Stats */}
-            <div className="discovery-summary">
-              <div className="summary-stat">
-                <span className="stat-number">{apiDiscovery.results.summary?.totalAPIs || 0}</span>
-                <span className="stat-label">APIs Tested</span>
-              </div>
-              <div className="summary-stat">
-                <span className="stat-number">{apiDiscovery.results.summary?.successfulProviders || 0}</span>
-                <span className="stat-label">Working Providers</span>
-              </div>
-              <div className="summary-stat">
-                <span className="stat-number">{apiDiscovery.results.summary?.successfulEndpoints || 0}</span>
-                <span className="stat-label">Available Endpoints</span>
-              </div>
-              <div className="summary-stat">
-                <span className="stat-number">{Math.round((apiDiscovery.results.summary?.testDuration || 0) / 1000)}s</span>
-                <span className="stat-label">Test Duration</span>
-              </div>
-            </div>
-
-            {/* API Provider Results */}
-            {apiDiscovery.results.results && (
-              <div className="api-providers">
-                {Object.entries(apiDiscovery.results.results).map(([key, provider]) => (
-                  <div key={key} className={`api-provider ${provider.summary?.successful > 0 ? 'success' : 'failed'}`}>
-                    <div className="provider-header">
-                      <h4>
-                        {getProviderIcon(provider.provider)} {provider.provider}
-                      </h4>
-                      <div className="provider-status">
-                        {provider.summary?.successful > 0 ? (
-                          <span className="status-success">✅ {provider.summary.successful} endpoints working</span>
-                        ) : provider.apiKeyRequired ? (
-                          <span className="status-auth">🔑 API key required</span>
-                        ) : (
-                          <span className="status-failed">❌ Not accessible</span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <p className="provider-description">{provider.description}</p>
-                    
-                    {provider.website && (
-                      <a href={provider.website} target="_blank" rel="noopener noreferrer" className="provider-link">
-                        🔗 Visit {provider.provider}
-                      </a>
-                    )}
-
-                    {/* Show working endpoints */}
-                    {provider.results && provider.results.filter(r => r.success).length > 0 && (
-                      <div className="working-endpoints">
-                        <h5>Working Endpoints:</h5>
-                        <ul>
-                          {provider.results.filter(r => r.success).map((endpoint, idx) => (
-                            <li key={idx}>
-                              <strong>{endpoint.endpoint}</strong>
-                              {endpoint.location && ` - ${endpoint.location}`}
-                              {endpoint.country && ` (${endpoint.country})`}
-                              {endpoint.solarMetrics && (
-                                <div className="solar-metrics">
-                                  Solar data: {JSON.stringify(endpoint.solarMetrics)}
-                                </div>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Recommendations */}
-            {apiDiscovery.results.recommendations && (
-              <div className="api-recommendations">
-                <h4>🎯 Integration Recommendations</h4>
-                <div className="recommendations-grid">
-                  {apiDiscovery.results.recommendations
-                    .sort((a, b) => getPriorityOrder(a.priority) - getPriorityOrder(b.priority))
-                    .map((rec, idx) => (
-                    <div key={idx} className={`recommendation priority-${rec.priority}`}>
-                      <div className="rec-status">{rec.status}</div>
-                      <div className="rec-api">{rec.api}</div>
-                      <div className="rec-reason">{rec.reason}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {apiDiscovery.lastTested && (
-              <p className="last-tested">
-                Last tested: {new Date(apiDiscovery.lastTested).toLocaleString()}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Main Dashboard Content */}
-      <div className="main-content">
-        <div className="control-panel">
+    <div className="enhanced-dashboard">
+      {/* Header */}
+      <div className="dashboard-header">
+        <h1>🌍 Multi-API Renewable Energy Dashboard</h1>
+        <div className="header-controls">
           <SiteSelector 
             sites={sites}
             selectedSite={selectedSite}
-            onSiteChange={handleSiteChange}
+            onSiteChange={setSelectedSite}
           />
-          
-          <div className="export-controls">
-            <button 
-              onClick={() => handleExportData('csv')}
-              disabled={!siteData}
-              className="export-button"
-            >
-              📊 Export CSV
-            </button>
-            <button 
-              onClick={() => handleExportData('json')}
-              disabled={!siteData}
-              className="export-button"
-            >
-              📁 Export JSON
-            </button>
+          <button 
+            className="refresh-btn"
+            onClick={refreshAllData}
+            disabled={Object.values(dashboardData.loading).some(loading => loading)}
+          >
+            🔄 Refresh All Data
+          </button>
+        </div>
+      </div>
+
+      {/* Site Info */}
+      {selectedSite && (
+        <div className="site-info">
+          <h2>📍 {selectedSite.name}</h2>
+          <div className="site-details">
+            <span>🔋 {selectedSite.capacity} MW</span>
+            <span>🌍 {selectedSite.location.latitude}°N, {selectedSite.location.longitude}°E</span>
+            <span>🏁 {selectedSite.country}</span>
           </div>
         </div>
+      )}
 
-        {selectedSite && (
-          <div className="site-overview">
-            <h2>{selectedSite.name}</h2>
-            <div className="site-details">
-              <div className="detail-item">
-                <span className="label">📍 Location:</span>
-                <span className="value">{selectedSite.location.latitude}°N, {selectedSite.location.longitude}°E</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">⚡ Capacity:</span>
-                <span className="value">{selectedSite.capacity} MW</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">🔧 Technology:</span>
-                <span className="value">{selectedSite.technology}</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">📊 Type:</span>
-                <span className="value">{selectedSite.type}</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">✅ Status:</span>
-                <span className="value status-operational">{selectedSite.status}</span>
-              </div>
-            </div>
+      {/* API Data Panels */}
+      <div className="api-panels-grid">
+        
+        {/* Carbon Intensity Panel */}
+        <CarbonIntensityPanel 
+          data={dashboardData.carbonIntensity}
+          loading={dashboardData.loading.carbon}
+        />
+
+        {/* Electricity Prices Panel */}
+        <ElectricityPricesPanel 
+          data={dashboardData.electricityPrices}
+          loading={dashboardData.loading.prices}
+        />
+
+        {/* Multi-Weather Comparison */}
+        <MultiWeatherPanel 
+          rebaseData={dashboardData.rebaseWeather}
+          openWeatherData={dashboardData.openWeather}
+          loading={dashboardData.loading.weather}
+        />
+
+        {/* Grid Generation Panel */}
+        <GridGenerationPanel 
+          solarData={dashboardData.solarGeneration}
+          powerBreakdown={dashboardData.powerBreakdown}
+          loading={dashboardData.loading.solar || dashboardData.loading.power}
+        />
+
+      </div>
+
+      {/* Footer with Data Sources */}
+      <div className="dashboard-footer">
+        <div className="data-sources">
+          <h3>📡 Data Sources:</h3>
+          <div className="source-indicators">
+            <span className={`source ${dashboardData.carbonIntensity?.source}`}>
+              ElectricityMap {dashboardData.carbonIntensity?.source === 'real' ? '✅' : '🔶'}
+            </span>
+            <span className={`source ${dashboardData.electricityPrices?.source}`}>
+              ENTSO-E {dashboardData.electricityPrices?.source === 'real' ? '✅' : '🔶'}
+            </span>
+            <span className={`source ${dashboardData.rebaseWeather?.source}`}>
+              Rebase {dashboardData.rebaseWeather?.source === 'real' ? '✅' : '🔶'}
+            </span>
+            <span className={`source ${dashboardData.openWeather?.source}`}>
+              OpenWeather {dashboardData.openWeather?.source === 'real' ? '✅' : '🔶'}
+            </span>
           </div>
-        )}
-
-        {loading && selectedSite && (
-          <div className="loading-state">
-            <div className="loading-spinner"></div>
-            <p>Loading site data and weather forecast...</p>
-          </div>
-        )}
-
-        {siteData && (
-          <div className="data-panels">
-            <WeatherForecastPanel 
-              weatherData={siteData.weather}
-              siteLocation={selectedSite.location}
-            />
-            
-            <div className="forecast-section">
-              <h3>📈 Combined Solar Production & Weather Forecast</h3>
-              <ForecastChart 
-                solarData={siteData.solar}
-                weatherData={siteData.weather}
-                siteName={selectedSite.name}
-              />
-            </div>
+        </div>
+        {dashboardData.lastUpdated && (
+          <div className="last-updated">
+            Last updated: {new Date(dashboardData.lastUpdated).toLocaleTimeString()}
           </div>
         )}
       </div>
@@ -363,22 +290,4 @@ const Dashboard = () => {
   );
 };
 
-// Helper functions
-function getProviderIcon(providerName) {
-  const icons = {
-    'ENTSO-E': '🌍',
-    'Swedish National Grid': '🇸🇪',
-    'Energy Charts': '⚡',
-    'ElectricityMap': '🔋',
-    'PVGis': '🌞',
-    'OpenWeatherMap': '🌤️'
-  };
-  return icons[providerName] || '🔧';
-}
-
-function getPriorityOrder(priority) {
-  const order = { high: 1, medium: 2, low: 3 };
-  return order[priority] || 4;
-}
-
-export default Dashboard;
+export default EnhancedDashboard;
