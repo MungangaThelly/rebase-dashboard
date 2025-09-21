@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_KEY = import.meta.env.VITE_REBASE_API_KEY;
 
 // FORCE MOCK MODE while we figure out the real API
-const FORCE_MOCK = true; // 👈 Keep this true for now
+const FORCE_MOCK = false; // 👈 Keep this true for now
 
 const BASE_URL = import.meta.env.DEV && !FORCE_MOCK
   ? '/api'  
