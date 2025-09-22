@@ -1,163 +1,538 @@
-.enhanced-dashboard {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+/* ✅ ENTSO-E Transparency Platform Design System */
+:root {
+  /* 🎨 ENTSO-E Official Color Palette */
+  --entso-primary: #0066cc;           /* ENTSO-E Blue */
+  --entso-secondary: #004d99;         /* Dark Blue */
+  --entso-light-blue: #3399ff;        /* Light Blue */
+  --entso-gray: #666666;              /* Text Gray */
+  --entso-light-gray: #f5f5f5;        /* Background Gray */
+  --entso-border: #cccccc;            /* Border Gray */
+  --entso-hover: #e6f2ff;             /* Hover Blue */
+  --entso-dark-gray: #333333;         /* Dark Text */
+  --entso-medium-gray: #999999;       /* Medium Gray */
+  --entso-success: #28a745;           /* Green */
+  --entso-warning: #ffc107;           /* Yellow */
+  --entso-danger: #dc3545;            /* Red */
+  
+  /* 📝 ENTSO-E Text Colors */
+  --text-primary: #333333;            /* Dark gray for main text */
+  --text-secondary: #666666;          /* Medium gray for secondary */
+  --text-muted: #999999;             /* Light gray for muted */
+  --text-white:#ffffff;             /* Pure white */
+  --text-blue: var(--entso-primary); /* Blue for links/accents */
+  
+  /* 🎨 ENTSO-E Backgrounds */
+  --bg-primary: rgb(39, 46, 3);             /* White background */
+  --bg-secondary: #466c55;           /* Light gray background */
+  --bg-hover: #e6f2ff;              /* Light blue hover */
+  --bg-selected: #cce6ff;           /* Selected blue */
+  
+  /* 📏 ENTSO-E Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
+  
+  /* 🎯 ENTSO-E Shadows */
+  --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 2px 6px rgba(0, 0, 0, 0.15);
+  --shadow-heavy: 0 4px 12px rgba(0, 0, 0, 0.2);
+  
+  /* 📐 ENTSO-E Border Radius */
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
 }
 
-/* Header */
+/* ✅ ENTSO-E Body Styling */
+body {
+  background: var(--bg-secondary);
+  font-family: Arial, sans-serif;
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+  font-size: 13px;
+}
+
+/* ✅ ENTSO-E Dashboard Container */
+.enhanced-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+  background: var(--bg-secondary);
+  min-height: 100vh;
+}
+
+/* ✅ ENTSO-E Header */
 .dashboard-header {
+  background: var(--bg-primary);
+  border: 1px solid var(--entso-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
-  color: white;
 }
 
 .dashboard-header h1 {
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: bold;
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
+  font-family: Arial, sans-serif;
 }
 
+.dashboard-header .subtitle {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: normal;
+}
+
+/* ✅ ENTSO-E Header Controls */
 .header-controls {
   display: flex;
-  gap: 15px;
+  gap: var(--spacing-sm);
   align-items: center;
 }
 
-.refresh-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
+.refresh-btn, .test-btn {
+  background: var(--entso-primary);
+  color: var(--text-white);
+  border: 1px solid var(--entso-primary);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: normal;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
-.refresh-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
+.refresh-btn:hover:not(:disabled),
+.test-btn:hover {
+  background: var(--entso-secondary);
+  border-color: var(--entso-secondary);
 }
 
 .refresh-btn:disabled {
-  opacity: 0.5;
+  background: var(--entso-medium-gray);
+  border-color: var(--entso-medium-gray);
   cursor: not-allowed;
 }
 
-/* Site Info */
+/* ✅ ENTSO-E Site Info */
 .site-info {
-  background: white;
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--bg-primary);
+  border: 1px solid var(--entso-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-light);
 }
 
 .site-info h2 {
-  margin: 0 0 10px 0;
-  color: #374151;
-  font-size: 18px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0 0 var(--spacing-md) 0;
+  font-family: Arial, sans-serif;
 }
 
 .site-details {
   display: flex;
-  gap: 20px;
-  color: #6b7280;
-  font-size: 14px;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
 }
 
-/* API Panels Grid */
+.site-details span {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: normal;
+  border: 1px solid var(--entso-border);
+}
+
+/* ✅ ENTSO-E Grid Layout */
 .api-panels-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 20px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
-/* Panel Base Styles */
-.panel {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+/* ✅ ENTSO-E Panel Base */
+.api-panel {
+  background: var(--bg-primary);
+  border: 1px solid var(--entso-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-light);
   overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: box-shadow 0.2s ease;
 }
 
-.panel:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+.api-panel:hover {
+  box-shadow: var(--shadow-medium);
 }
 
+/* ✅ ENTSO-E Panel Headers */
 .panel-header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--entso-border);
+  padding: 10px 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
 }
 
 .panel-header h3 {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: bold;
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #374151;
+  font-family: Arial, sans-serif;
 }
 
-.panel-controls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+.source-indicator, .data-source {
+  background: var(--bg-hover);
+  color: var(--entso-primary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: normal;
+  border: 1px solid rgba(0, 102, 204, 0.3);
 }
 
-.data-source {
-  background: #e2e8f0;
-  color: #475569;
+/* ✅ ENTSO-E Panel Content */
+.panel-content {
+  padding: var(--spacing-lg);
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.panel-footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--entso-border);
+  padding: 8px 15px;
+}
+
+.panel-footer small {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-style: italic;
+}
+
+/* ✅ ENTSO-E Specific Panel Colors */
+.carbon-intensity-panel {
+  border-left: 3px solid var(--entso-success);
+}
+
+.electricity-prices-panel {
+  border-left: 3px solid var(--entso-warning);
+}
+
+.weather-panel {
+  border-left: 3px solid var(--entso-primary);
+}
+
+.grid-generation-panel {
+  border-left: 3px solid var(--entso-danger);
+}
+
+/* ✅ ENTSO-E Metric Display */
+.carbon-current, .price-current, .main-metric {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid var(--entso-border);
+}
+
+.carbon-value, .price-value, .metric-value .value {
+  font-size: 32px;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+  font-family: Arial, sans-serif;
+}
+
+.carbon-unit, .price-unit, .metric-value .unit {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: normal;
+  margin-bottom: var(--spacing-md);
+}
+
+.carbon-level, .price-level {
+  display: inline-block;
   padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: bold;
+  border: 1px solid;
+  text-transform: uppercase;
 }
 
+.carbon-level.low, .price-level.low {
+  background: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+.carbon-level.medium, .price-level.medium {
+  background: #fff3cd;
+  color: #856404;
+  border-color: #ffeaa7;
+}
+
+.carbon-level.high, .price-level.high {
+  background: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+/* ✅ ENTSO-E Info Rows */
+.carbon-info, .summary-info, .price-stats {
+  display: block;
+  margin-top: var(--spacing-lg);
+}
+
+.info-row, .stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dotted var(--entso-border);
+  transition: background-color 0.2s ease;
+}
+
+.info-row:hover, .stat-item:hover {
+  background: var(--bg-hover);
+}
+
+.info-row:last-child, .stat-item:last-child {
+  border-bottom: none;
+}
+
+.info-label, .stat-label {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: normal;
+  flex: 1;
+}
+
+.info-value, .stat-value {
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: bold;
+  text-align: right;
+}
+
+/* ✅ ENTSO-E Chart Container */
+.chart-container {
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--entso-border);
+}
+
+/* ✅ ENTSO-E Weather Sources */
+.weather-sources {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.source-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: normal;
+  border: 1px solid;
+  transition: all 0.2s ease;
+}
+
+.source-status.active {
+  background: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+.source-status.inactive {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  border-color: var(--entso-border);
+}
+
+/* ✅ ENTSO-E Grid Generation */
+.sources-list {
+  display: block;
+}
+
+.source-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px dotted var(--entso-border);
+  transition: background-color 0.2s ease;
+}
+
+.source-item:hover {
+  background: var(--bg-hover);
+}
+
+.source-item:last-child {
+  border-bottom: none;
+}
+
+.source-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex: 1;
+}
+
+.source-icon {
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+}
+
+.source-name {
+  color: var(--text-primary);
+  font-weight: normal;
+  font-size: 11px;
+}
+
+.source-values {
+  display: flex;
+  gap: var(--spacing-lg);
+  font-size: 11px;
+}
+
+.source-power {
+  color: var(--text-primary);
+  font-weight: bold;
+  min-width: 60px;
+  text-align: right;
+}
+
+.source-percentage {
+  color: var(--text-secondary);
+  font-weight: normal;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* ✅ ENTSO-E Footer */
+.dashboard-footer {
+  background: var(--bg-primary);
+  border: 1px solid var(--entso-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-xl);
+}
+
+.data-sources h3 {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: bold;
+  margin: 0 0 var(--spacing-sm) 0;
+  font-family: Arial, sans-serif;
+}
+
+.source-indicators {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.source-indicators .source {
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: normal;
+  border: 1px solid;
+  transition: all 0.2s ease;
+}
+
+.source-indicators .source.real {
+  background: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+.source-indicators .source.mock {
+  background: #fff3cd;
+  color: #856404;
+  border-color: #ffeaa7;
+}
+
+.last-updated {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-style: italic;
+}
+
+/* ✅ ENTSO-E View Buttons */
 .view-btn {
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  padding: 6px 10px;
-  border-radius: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--entso-border);
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: normal;
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 12px;
-}
-
-.view-btn.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
+  transition: all 0.2s ease;
 }
 
 .view-btn:hover:not(.active) {
-  background: #e2e8f0;
+  background: var(--bg-hover);
+  border-color: var(--entso-primary);
+  color: var(--entso-primary);
 }
 
-/* Loading and Error States */
-.loading-state, .error-state {
-  padding: 40px 20px;
+.view-btn.active {
+  background: var(--entso-primary);
+  border-color: var(--entso-primary);
+  color: var(--text-white);
+}
+
+/* ✅ ENTSO-E Loading States */
+.loading-state {
   text-align: center;
-  color: #6b7280;
+  padding: var(--spacing-3xl);
+  color: var(--text-muted);
 }
 
 .loading-spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid #e2e8f0;
-  border-top: 2px solid #3b82f6;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--entso-border);
+  border-top: 2px solid var(--entso-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 10px;
+  margin: 0 auto var(--spacing-md);
 }
 
 @keyframes spin {
@@ -165,533 +540,153 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Carbon Panel */
-.carbon-panel .carbon-content {
-  padding: 20px;
-}
-
-.carbon-current {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.carbon-value {
-  font-size: 48px;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.carbon-unit {
-  color: #6b7280;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.carbon-level {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.carbon-info {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-}
-
-.label {
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.value {
-  font-weight: 500;
-  color: #374151;
-}
-
-.environmental-impact {
-  margin-top: 20px;
-}
-
-.impact-grid {
-  display: grid;
-  gap: 10px;
-}
-
-.impact-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-}
-
-.impact-label {
-  color: #6b7280;
-}
-
-.impact-value {
-  font-weight: 600;
-  color: #374151;
-}
-
-/* Prices Panel */
-.prices-panel .prices-content {
-  padding: 20px;
-}
-
-.price-current {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.price-value {
-  font-size: 36px;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.price-unit {
-  color: #6b7280;
+.loading-state p {
+  color: var(--text-secondary);
   font-size: 12px;
-  margin-bottom: 5px;
+  margin: 0;
 }
 
-.price-level {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.price-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.stat-item {
+/* ✅ ENTSO-E Error States */
+.error-state {
   text-align: center;
+  padding: var(--spacing-3xl);
 }
 
-.stat-label {
-  display: block;
-  color: #6b7280;
+.error-message p {
+  color: var(--entso-danger);
   font-size: 12px;
-  margin-bottom: 4px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
 }
 
-.stat-value {
-  display: block;
-  font-weight: 600;
-  color: #374151;
-  font-size: 14px;
+.error-message small {
+  color: var(--text-muted);
+  font-size: 10px;
 }
 
-.prices-table {
-  max-height: 300px;
-  overflow-y: auto;
+/* ✅ ENTSO-E Tables */
+.table-container {
+  background: var(--bg-primary);
+  border: 1px solid var(--entso-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
 .table-container table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 11px;
 }
 
 .table-container th,
 .table-container td {
-  padding: 8px 12px;
+  padding: 6px 8px;
   text-align: left;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--entso-border);
 }
 
 .table-container th {
-  background: #f8fafc;
-  font-weight: 600;
-  color: #374151;
-  font-size: 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: bold;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.table-container td {
+  color: var(--text-primary);
+  font-weight: normal;
 }
 
 .table-container .current-hour {
-  background: #eff6ff;
-}
-
-.price-tips {
-  margin-top: 20px;
-}
-
-.tips-list {
-  display: grid;
-  gap: 8px;
-}
-
-.tip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #374151;
-}
-
-.tip-icon {
-  font-size: 16px;
-}
-
-/* Weather Panel */
-.weather-panel .weather-content {
-  padding: 20px;
-}
-
-.weather-sources {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.source-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.source-status.active {
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
-}
-
-.source-status.inactive {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  opacity: 0.6;
-}
-
-.weather-stats {
-  margin-top: 20px;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-}
-
-.current-conditions {
-  margin-top: 20px;
-}
-
-.conditions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-}
-
-.condition-source {
-  background: #f8fafc;
-  padding: 15px;
-  border-radius: 8px;
-}
-
-.condition-source h5 {
-  margin: 0 0 10px 0;
-  color: #374151;
-  font-size: 14px;
-}
-
-.condition-values {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.metric-selector {
-  background: white;
-  border: 1px solid #e2e8f0;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-/* Grid Panel */
-.grid-panel .grid-content {
-  padding: 20px;
-}
-
-.generation-stats {
-  margin-top: 20px;
-}
-
-.breakdown-list {
-  margin-top: 20px;
-}
-
-.sources-list {
-  display: grid;
-  gap: 8px;
-}
-
-.source-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: #f8fafc;
-  border-radius: 6px;
-}
-
-.source-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.source-icon {
-  font-size: 16px;
-}
-
-.source-name {
-  font-weight: 500;
-  color: #374151;
-}
-
-.source-values {
-  display: flex;
-  gap: 10px;
-  font-size: 14px;
-}
-
-.source-power {
-  font-weight: 600;
-  color: #374151;
-}
-
-.source-percentage {
-  color: #6b7280;
-}
-
-.renewable-stats {
-  margin-top: 20px;
-}
-
-.renewable-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 15px;
-}
-
-.renewable-item {
-  text-align: center;
-}
-
-.renewable-label {
-  display: block;
-  color: #6b7280;
-  font-size: 12px;
-  margin-bottom: 4px;
-}
-
-.renewable-value {
-  display: block;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.renewable-value.green {
-  color: #059669;
-}
-
-/* Footer */
-.dashboard-footer {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: var(--card-bg);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.data-sources h3 {
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-  font-size: 1.1rem;
-}
-
-.source-indicators {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-}
-
-/* ✅ FIXED: Data Source Indicator Styles */
-.source-indicators .source {
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-primary); /* ✅ Ensure text is always visible */
-  border: 1px solid var(--border-color);
-  transition: all 0.2s ease;
-}
-
-/* Real data sources (green) */
-.source-indicators .source.real {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.3);
-  color: #059669; /* ✅ Dark green text */
-}
-
-/* Mock data sources (orange) */
-.source-indicators .source.mock {
-  background: rgba(249, 115, 22, 0.1);
-  border-color: rgba(249, 115, 22, 0.3);
-  color: #ea580c; /* ✅ Dark orange text */
-}
-
-/* Default/unknown sources (gray) */
-.source-indicators .source:not(.real):not(.mock) {
-  background: rgba(107, 114, 128, 0.1);
-  border-color: rgba(107, 114, 128, 0.3);
-  color: #6b7280; /* ✅ Gray text */
-}
-
-/* Hover effects */
-.source-indicators .source:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Last Updated */
-.last-updated {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-/* ✅ Carbon Intensity Specific Styles */
-.main-metric {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.metric-value {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.metric-value .value {
-  font-size: 3rem;
+  background: var(--bg-selected);
   font-weight: bold;
-  line-height: 1;
 }
 
-.metric-value.low .value {
-  color: #10b981;
-}
-
-.metric-value.medium .value {
-  color: #f59e0b;
-}
-
-.metric-value.high .value {
-  color: #ef4444;
-}
-
-.metric-value .unit {
-  font-size: 0.875rem;
-  color: #9ca3af;
-  margin-top: 0.25rem;
-}
-
-.metric-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #e5e7eb;
-}
-
-.chart-container {
-  margin: 1rem 0;
-  padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-}
-
-.summary-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.25rem 0;
-}
-
-.info-label {
-  font-size: 0.875rem;
-  color: #9ca3af;
-}
-
-.info-value {
-  font-size: 0.875rem;
-  color: #e5e7eb;
-  font-weight: 500;
-}
-
-.status-low {
-  color: #10b981 !important;
-}
-
-.status-medium {
-  color: #f59e0b !important;
-}
-
-.status-high {
-  color: #ef4444 !important;
-}
-
-.info-note {
-  font-size: 0.75rem;
-  color: #6b7280;
-  font-style: italic;
-  grid-column: 1 / -1;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
+/* ✅ ENTSO-E Responsive Design */
+@media (max-width: 900px) {
   .api-panels-grid {
     grid-template-columns: 1fr;
   }
   
   .dashboard-header {
     flex-direction: column;
-    gap: 15px;
+    gap: var(--spacing-md);
+    text-align: center;
+  }
+  
+  .dashboard-footer {
+    flex-direction: column;
+    gap: var(--spacing-md);
     text-align: center;
   }
   
   .site-details {
     flex-direction: column;
-    gap: 5px;
+    gap: var(--spacing-sm);
   }
   
-  .dashboard-footer {
+  .weather-sources {
     flex-direction: column;
-    gap: 15px;
-    text-align: center;
+    gap: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 600px) {
+  .enhanced-dashboard {
+    padding: var(--spacing-sm);
+  }
+  
+  .panel-content {
+    padding: var(--spacing-md);
+  }
+  
+  .carbon-value,
+  .price-value {
+    font-size: 24px;
+  }
+  
+  .source-values {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+/* ✅ ENTSO-E Chart Tooltips */
+.recharts-tooltip-wrapper {
+  z-index: 1000;
+}
+
+.recharts-default-tooltip {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--entso-border) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: var(--shadow-medium) !important;
+  color: var(--text-primary) !important;
+  font-size: 11px !important;
+  font-family: Arial, sans-serif !important;
+}
+
+/* ✅ ENTSO-E Accessibility */
+.refresh-btn:focus,
+.test-btn:focus,
+.view-btn:focus {
+  outline: 2px solid var(--entso-primary);
+  outline-offset: 1px;
+}
+
+/* ✅ ENTSO-E Print Styles */
+@media print {
+  body {
+    background: white;
+  }
+  
+  .api-panel {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .dashboard-header {
+    box-shadow: none;
   }
 }
