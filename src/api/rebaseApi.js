@@ -75,6 +75,36 @@ const makeWeatherApiRequest = async (endpoint, options = {}) => {
   }
 };
 
+// ✅ ADD MISSING testRebaseAuth function
+const testRebaseAuth = async () => {
+  if (!API_KEY) {
+    return { 
+      success: false, 
+      error: 'No API key found in environment variables' 
+    };
+  }
+
+  try {
+    console.log('🔍 Testing Rebase API authentication...');
+    
+    // Test with a simple endpoint that should work with valid auth
+    const result = await makeApiRequest('/v1/sites');
+    
+    console.log('✅ Rebase API authentication successful!');
+    return {
+      success: true,
+      message: 'Rebase API connection successful',
+      data: result
+    };
+  } catch (error) {
+    console.error('❌ Rebase API auth test failed:', error);
+    return {
+      success: false,
+      error: error.message || 'Authentication failed'
+    };
+  }
+};
+
 // Updated weather fetching with correct parameters
 const fetchRebaseWeather = async (lat = 59.3293, lon = 18.0686) => {
   if (!API_KEY) {
@@ -307,12 +337,13 @@ const getMockWeatherData = () => {
   };
 };
 
-// ✅ SINGLE EXPORT STATEMENT - All exports in one place
+// ✅ FIXED EXPORTS - All exported functions are now defined
 export { 
   API_KEY, 
   BASE_URL, 
   ENABLE_TESTING, 
   testRebaseWeatherEndpoint,
   fetchEnergySites,
-  fetchRebaseWeather
+  fetchRebaseWeather,
+  testRebaseAuth  // ✅ Now properly defined above
 };

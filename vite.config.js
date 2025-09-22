@@ -35,6 +35,49 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/api\/electricitymap/, '/v3')
         }
       }
+    },
+    
+    // ✅ ADD BUILD OPTIMIZATION
+    build: {
+      // Increase chunk size warning limit
+      chunkSizeWarningLimit: 1000,
+      
+      rollupOptions: {
+        output: {
+          // ✅ Manual chunk splitting for better performance
+          manualChunks: (id) => {
+            // Vendor libraries
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'vendor-react';
+              }
+              if (id.includes('recharts')) {
+                return 'vendor-charts';
+              }
+              return 'vendor';
+            }
+            
+            // API modules
+            if (id.includes('/api/')) {
+              return 'api-modules';
+            }
+            
+            // Components
+            if (id.includes('/components/') && !id.includes('Dashboard.jsx')) {
+              return 'dashboard-components';
+            }
+          }
+        }
+      },
+      
+      // ✅ Production optimizations
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true, // Remove console.logs in production
+          drop_debugger: true
+        }
+      }
     }
   }
 })

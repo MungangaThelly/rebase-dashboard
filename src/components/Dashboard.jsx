@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchEnergySites, fetchRebaseWeather } from '../api/rebaseApi';
-import { fetchElectricityPrices, fetchSolarGeneration, fetchWindGeneration } from '../api/entsoeApi';
+import { fetchElectricityPrices, fetchSolarGeneration } from '../api/entsoeApi';
 import { fetchCarbonIntensity, fetchPowerBreakdown } from '../api/electricityMapApi';
 import { fetchCurrentWeather } from '../api/openWeatherApi';
 import CarbonIntensityPanel from './CarbonIntensityPanel';
@@ -15,12 +15,11 @@ let globalInitLock = false;
 const EnhancedDashboard = () => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [selectedSite, setSelectedSite] = useState(null);
-  const [sites, setSites] = useState([]); // ✅ Keep this for SiteSelector
+  const [sites, setSites] = useState([]);
   const [error, setError] = useState(null);
 
-  // ✅ CONSOLIDATED STATE - Remove duplicates
   const [dashboardData, setDashboardData] = useState({
-    sites: [], // ✅ Add sites to dashboardData
+    sites: [],
     carbonIntensity: null,
     electricityPrices: null,
     rebaseWeather: null,
@@ -72,9 +71,6 @@ const EnhancedDashboard = () => {
       ]);
 
       const [pricesResult, carbonResult, solarResult, weatherResult, powerResult, rebaseWeatherResult] = results;
-      
-      console.log('🔍 Debug - OpenWeather data:', weatherResult.value);
-      console.log('🔍 Debug - Rebase weather data:', rebaseWeatherResult?.value);
       
       setDashboardData(prev => ({
         ...prev,
@@ -130,11 +126,9 @@ const EnhancedDashboard = () => {
       console.log('🚀 Initializing dashboard (single load)...');
       
       try {
-        // Load sites first
         const sitesData = await fetchEnergySites();
         if (!isMounted) return;
         
-        // ✅ Update both sites state and dashboardData.sites
         setSites(sitesData);
         setDashboardData(prev => ({
           ...prev,
@@ -145,7 +139,6 @@ const EnhancedDashboard = () => {
           setSelectedSite(sitesData[0]);
         }
         
-        // Then load API data
         await loadAllAPIData();
         
       } catch (error) {
@@ -168,41 +161,6 @@ const EnhancedDashboard = () => {
     loadAllAPIData();
   };
 
-  const testRebaseAPI = async () => {
-    try {
-      const { testRebaseAuth } = await import('../api/rebaseApi');
-      const result = await testRebaseAuth();
-      
-      if (result.success) {
-        console.log('🎉 Rebase API is working!');
-        alert('✅ Rebase API connection successful!');
-      } else {
-        console.error('❌ Rebase API test failed:', result.error);
-        alert('❌ Rebase API connection failed: ' + result.error);
-      }
-    } catch (error) {
-      console.error('❌ Error testing Rebase API:', error);
-      alert('❌ Error testing Rebase API: ' + error.message);
-    }
-  };
-
-  const testRebaseEndpoints = async () => {
-    try {
-      const { testRebaseWeatherEndpoint } = await import('../api/rebaseApi');
-      const endpoints = ['query', 'point/operational', 'point/historical', 'area/operational'];
-      
-      console.log('🧪 Testing all Rebase Weather endpoints...');
-      
-      for (const endpoint of endpoints) {
-        const result = await testRebaseWeatherEndpoint(endpoint);
-        console.log(`${endpoint}:`, result.success ? '✅' : '❌', result.error || 'Success');
-      }
-    } catch (error) {
-      console.error('❌ Error testing endpoints:', error);
-    }
-  };
-
-  // ✅ Fixed handleSiteSelect function
   const handleSiteSelect = (site) => {
     console.log('🏗️ Site selected:', site);
     setSelectedSite(site);
@@ -214,7 +172,6 @@ const EnhancedDashboard = () => {
       <div className="dashboard-header">
         <h1>🌍 Multi-API Renewable Energy Dashboard</h1>
         <div className="header-controls">
-          {/* ✅ Fixed SiteSelector - use sites state, not dashboardData.sites */}
           {sites && sites.length > 0 && (
             <SiteSelector 
               sites={sites}
@@ -228,12 +185,6 @@ const EnhancedDashboard = () => {
             disabled={Object.values(dashboardData.loading).some(loading => loading)}
           >
             🔄 Refresh All Data
-          </button>
-          <button onClick={testRebaseAPI} className="test-btn">
-            🔌 Test Rebase API
-          </button>
-          <button onClick={testRebaseEndpoints} className="test-btn">
-            🧪 Test Rebase Endpoints
           </button>
         </div>
       </div>
@@ -261,26 +212,22 @@ const EnhancedDashboard = () => {
       {/* API Data Panels */}
       <div className="api-panels-grid">
         
-        {/* Carbon Intensity Panel */}
         <CarbonIntensityPanel 
           data={dashboardData.carbonIntensity}
           loading={dashboardData.loading.carbon}
         />
 
-        {/* Electricity Prices Panel */}
         <ElectricityPricesPanel 
           data={dashboardData.electricityPrices}
           loading={dashboardData.loading.prices}
         />
 
-        {/* Multi-Weather Comparison */}
         <MultiWeatherPanel 
           rebaseData={dashboardData.rebaseWeather}
           openWeatherData={dashboardData.openWeather}
           loading={dashboardData.loading.weather || dashboardData.loading.rebaseWeather}
         />
 
-        {/* Grid Generation Panel */}
         <GridGenerationPanel 
           solarData={dashboardData.solarGeneration}
           powerBreakdown={dashboardData.powerBreakdown}
