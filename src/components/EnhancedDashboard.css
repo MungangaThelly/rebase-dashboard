@@ -508,47 +508,74 @@
 
 /* Footer */
 .dashboard-footer {
-  background: white;
-  padding: 15px 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .data-sources h3 {
-  margin: 0 0 10px 0;
-  font-size: 14px;
-  color: #374151;
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1.1rem;
 }
 
 .source-indicators {
   display: flex;
-  gap: 15px;
   flex-wrap: wrap;
+  gap: 0.8rem;
 }
 
-.source {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+/* ✅ FIXED: Data Source Indicator Styles */
+.source-indicators .source {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
   font-weight: 500;
+  color: var(--text-primary); /* ✅ Ensure text is always visible */
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
 }
 
-.source.real {
-  background: #dcfce7;
-  color: #166534;
+/* Real data sources (green) */
+.source-indicators .source.real {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #059669; /* ✅ Dark green text */
 }
 
-.source.mock {
-  background: #fef3c7;
-  color: #92400e;
+/* Mock data sources (orange) */
+.source-indicators .source.mock {
+  background: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.3);
+  color: #ea580c; /* ✅ Dark orange text */
 }
 
+/* Default/unknown sources (gray) */
+.source-indicators .source:not(.real):not(.mock) {
+  background: rgba(107, 114, 128, 0.1);
+  border-color: rgba(107, 114, 128, 0.3);
+  color: #6b7280; /* ✅ Gray text */
+}
+
+/* Hover effects */
+.source-indicators .source:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Last Updated */
 .last-updated {
-  color: #6b7280;
-  font-size: 12px;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 /* Responsive Design */

@@ -8,40 +8,32 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       proxy: {
+        '/api/rebase/weather': {
+          target: 'https://api.rebase.energy/weather/v2',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/rebase\/weather/, ''),
+          headers: {
+            'Origin': 'https://api.rebase.energy'
+          }
+        },
         '/api/rebase': {
           target: 'https://api.rebase.energy',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/rebase/, ''),
+          headers: {
+            'Origin': 'https://api.rebase.energy'
+          }
         },
         '/api/entsoe': {
           target: 'https://web-api.tp.entsoe.eu',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/entsoe/, '/api'),
-          configure: (proxy, options) => {
-            proxy.on('error', (err, req, res) => {
-              console.log('ENTSO-E proxy error:', err.message);
-            });
-          }
+          rewrite: (path) => path.replace(/^\/api\/entsoe/, '/api')
         },
         '/api/electricitymap': {
           target: 'https://api.electricitymap.org',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/electricitymap/, '/v3'),
-          configure: (proxy, options) => {
-            proxy.on('proxyReq', (proxyReq, req, res) => {
-              const apiKey = env.VITE_ELECTRICITYMAP_API_KEY;
-              if (apiKey) {
-                proxyReq.setHeader('auth-token', apiKey);
-              } else {
-                console.warn('⚠️ ElectricityMap API key not found in environment variables');
-              }
-            });
-            proxy.on('error', (err, req, res) => {
-              console.log('ElectricityMap proxy error:', err.message);
-            });
-          }
+          rewrite: (path) => path.replace(/^\/api\/electricitymap/, '/v3')
         }
-        // OpenWeather proxy removed - using direct API calls
       }
     }
   }
