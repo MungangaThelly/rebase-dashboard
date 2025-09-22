@@ -6,32 +6,40 @@
   NODE_VERSION = "18"
   NPM_VERSION = "9"
 
-# SPA routing - redirect all routes to index.html
+# SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# API redirects for production (optional - your app uses mock data fallbacks)
-[[redirects]]
-  from = "/api/rebase/*"
-  to = "https://api.rebase.energy/:splat"
-  status = 200
-  force = false
-  
-[[redirects]]
-  from = "/api/entsoe/*"
-  to = "https://web-api.tp.entsoe.eu/api/:splat" 
-  status = 200
-  force = false
-
+# ✅ UPDATED: Better API redirects with CORS headers
 [[redirects]]
   from = "/api/electricitymap/*"
   to = "https://api.electricitymap.org/v3/:splat"
   status = 200
   force = false
+  headers = {X-Requested-With = "XMLHttpRequest"}
 
-# Headers for better performance
+[[redirects]]
+  from = "/api/entsoe/*"
+  to = "https://web-api.tp.entsoe.eu/api/:splat"
+  status = 200
+  force = false
+
+[[redirects]]
+  from = "/api/rebase/*"
+  to = "https://api.rebase.energy/:splat"
+  status = 200
+  force = false
+
+# ✅ Add CORS headers for API calls
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, auth-token"
+
 [[headers]]
   for = "/assets/*"
   [headers.values]

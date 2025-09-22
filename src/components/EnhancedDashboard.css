@@ -578,6 +578,100 @@
   text-align: center;
 }
 
+/* ✅ Carbon Intensity Specific Styles */
+.main-metric {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.metric-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.metric-value .value {
+  font-size: 3rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.metric-value.low .value {
+  color: #10b981;
+}
+
+.metric-value.medium .value {
+  color: #f59e0b;
+}
+
+.metric-value.high .value {
+  color: #ef4444;
+}
+
+.metric-value .unit {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #e5e7eb;
+}
+
+.chart-container {
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.summary-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.info-label {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.info-value {
+  font-size: 0.875rem;
+  color: #e5e7eb;
+  font-weight: 500;
+}
+
+.status-low {
+  color: #10b981 !important;
+}
+
+.status-medium {
+  color: #f59e0b !important;
+}
+
+.status-high {
+  color: #ef4444 !important;
+}
+
+.info-note {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-style: italic;
+  grid-column: 1 / -1;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .api-panels-grid {
