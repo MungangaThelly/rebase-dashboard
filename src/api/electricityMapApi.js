@@ -6,36 +6,25 @@ const headers = {
   'Content-Type': 'application/json'
 };
 
-export const fetchCarbonIntensity = async (zone = 'SE') => {
+// Update the API calls to use correct endpoints
+export async function fetchCarbonIntensity(zone = 'SE') {
   try {
-    console.log('🔄 Fetching ElectricityMap carbon intensity...');
-    
     const response = await fetch(`/api/electricitymap/carbon-intensity/latest?zone=${zone}`, {
-      headers
+      headers: {
+        'auth-token': import.meta.env.VITE_ELECTRICITYMAP_API_KEY
+      }
     });
     
     if (!response.ok) {
-      console.warn(`⚠️ ElectricityMap carbon API error: ${response.status}`);
       throw new Error(`ElectricityMap API error: ${response.status}`);
     }
     
-    const data = await response.json();
-    console.log('✅ ElectricityMap carbon intensity received:', data);
-    
-    return {
-      source: 'real',
-      zone,
-      carbonIntensity: data.carbonIntensity,
-      datetime: data.datetime,
-      updatedAt: data.updatedAt,
-      unit: 'gCO2eq/kWh',
-      fetchedAt: new Date().toISOString()
-    };
+    return await response.json();
   } catch (error) {
-    console.error('❌ Error fetching carbon intensity:', error);
-    return generateMockCarbonIntensity(zone);
+    console.warn('🔋 ElectricityMap API failed, using mock data:', error);
+    return getMockCarbonIntensity();
   }
-};
+}
 
 export const fetchPowerBreakdown = async (zone = 'SE') => {
   try {

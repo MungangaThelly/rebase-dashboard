@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-const GridGenerationPanel = ({ solarData, powerBreakdown, loading }) => {
+const GridGenerationPanel = ({ generationData, powerBreakdown, loading }) => {
   const [viewMode, setViewMode] = useState('generation'); // 'generation' or 'breakdown'
 
   if (loading) {
@@ -18,7 +18,7 @@ const GridGenerationPanel = ({ solarData, powerBreakdown, loading }) => {
     );
   }
 
-  if (!solarData && !powerBreakdown) {
+  if (!generationData && !powerBreakdown) {
     return (
       <div className="panel grid-panel">
         <div className="panel-header">
@@ -70,6 +70,16 @@ const GridGenerationPanel = ({ solarData, powerBreakdown, loading }) => {
     return icons[type.toLowerCase()] || '⚡';
   };
 
+  // Ensure data exists and has the right structure
+  const safeData = generationData?.data || generationData?.energyData || [];
+
+  // Chart data preparation
+  const chartData = safeData.map((item, index) => ({
+    time: item.timestamp ? new Date(item.timestamp).getHours() : index,
+    generation: item.generation || item.value || 0,
+    ...item
+  }));
+
   return (
     <div className="panel grid-panel">
       <div className="panel-header">
@@ -92,16 +102,16 @@ const GridGenerationPanel = ({ solarData, powerBreakdown, loading }) => {
 
       <div className="grid-content">
         
-        {viewMode === 'generation' && solarData ? (
+        {viewMode === 'generation' && generationData ? (
           <div className="generation-view">
             {/* Solar Generation Chart */}
             <div className="generation-chart">
               <h4>☀️ Solar Generation Forecast</h4>
               <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={solarData.generation}>
+                <AreaChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
-                    dataKey="hour" 
+                    dataKey="time" 
                     tickFormatter={(value) => `${value}:00`}
                   />
                   <YAxis />
@@ -127,19 +137,19 @@ const GridGenerationPanel = ({ solarData, powerBreakdown, loading }) => {
                 <div className="stat-item">
                   <span className="stat-label">Peak Generation:</span>
                   <span className="stat-value">
-                    {Math.max(...solarData.generation.map(g => g.generation))} MW
+                    {Math.max(...chartData.map(g => g.generation))} MW
                   </span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">Daily Total:</span>
                   <span className="stat-value">
-                    {Math.round(solarData.generation.reduce((sum, g) => sum + g.generation, 0))} MWh
+                    {Math.round(chartData.reduce((sum, g) => sum + g.generation, 0))} MWh
                   </span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">Data Source:</span>
                   <span className="stat-value">
-                    {solarData.source === 'real' ? '✅ ENTSO-E' : '🔶 Mock'}
+                    {generationData.source === 'real' ? '✅ ENTSO-E' : '🔶 Mock'}
                   </span>
                 </div>
               </div>

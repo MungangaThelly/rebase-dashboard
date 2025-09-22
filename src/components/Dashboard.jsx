@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchEnergySites, fetchEnergyProduction, fetchWeatherData, testEnergySubEndpoints, testAllEndpoints, debugApiConfig } from '../api/rebaseApi';
+import { fetchEnergySites, fetchRebaseWeather } from '../api/rebaseApi'; // ✅ Only import what exists
 import { fetchElectricityPrices, fetchSolarGeneration, fetchWindGeneration } from '../api/entsoeApi';
 import { fetchCarbonIntensity, fetchPowerBreakdown } from '../api/electricityMapApi';
 import { fetchCurrentWeather } from '../api/openWeatherApi';
@@ -10,190 +10,198 @@ import GridGenerationPanel from './GridGenerationPanel';
 import SiteSelector from './SiteSelector';
 import './EnhancedDashboard.css';
 
+let globalInitLock = false; // Prevent any duplicate initialization
+
 const EnhancedDashboard = () => {
+  // Add loading prevention state
+  const [isInitializing, setIsInitializing] = useState(false);
+
+  // ✅ EXISTING STATE VARIABLES
   const [selectedSite, setSelectedSite] = useState(null);
   const [sites, setSites] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [electricityPrices, setElectricityPrices] = useState(null);
+  const [carbonIntensity, setCarbonIntensity] = useState(null);
+  const [weatherData, setWeatherData] = useState(null);
+  const [solarData, setSolarData] = useState(null);
+  const [error, setError] = useState(null);
+
+  // ✅ DASHBOARD DATA STATE
   const [dashboardData, setDashboardData] = useState({
     carbonIntensity: null,
     electricityPrices: null,
-    powerBreakdown: null,
-    solarGeneration: null,
     rebaseWeather: null,
     openWeather: null,
+    solarGeneration: null,
+    powerBreakdown: null,
     loading: {
       carbon: false,
       prices: false,
-      power: false,
+      weather: false,
       solar: false,
-      weather: false
+      power: false
     },
     lastUpdated: null
   });
 
-  // Load sites on component mount
-  useEffect(() => {
-    loadSites();
-  }, []);
-
-  // Load all API data when site is selected
-  useEffect(() => {
-    if (selectedSite?.location) {
-      loadAllAPIData(selectedSite);
+  // ✅ FIXED LOAD ALL API DATA FUNCTION
+  const loadAllAPIData = async () => {
+    // Prevent concurrent calls
+    if (isInitializing) {
+      console.log('⏸️ API loading already in progress, skipping...');
+      return;
     }
-  }, [selectedSite]);
-
-  // Test all APIs on mount - UPDATED
-  useEffect(() => {
-    const testAllAPIs = async () => {
-      console.log('🧪 Testing all APIs...');
-      
-      // Debug API config first
-      debugApiConfig();
-      
-      // Test all Rebase endpoints
-      const rebaseResults = await testAllEndpoints();
-      console.log('🎯 Rebase test results:', rebaseResults);
-      
-      // Test other APIs
-      try {
-        const prices = await fetchElectricityPrices();
-        console.log('⚡ Electricity prices:', prices);
-      } catch (error) {
-        console.log('❌ ENTSO-E error:', error.message);
-      }
-      
-      try {
-        const carbon = await fetchCarbonIntensity('SE');
-        console.log('🌿 Carbon intensity:', carbon);
-      } catch (error) {
-        console.log('❌ ElectricityMap error:', error.message);
-      }
-      
-      try {
-        const weather = await fetchCurrentWeather(59.3293, 18.0686);
-        console.log('☁️ Weather:', weather);
-      } catch (error) {
-        console.log('❌ OpenWeather error:', error.message);
-      }
-    };
     
-    testAllAPIs();
-  }, []);
-
-  // Test energy sub-endpoints - SIMPLIFIED
-  useEffect(() => {
-    const testEnergyPaths = async () => {
-      console.log('🧪 Testing energy sub-endpoints...');
-      try {
-        const results = await testEnergySubEndpoints();
-        console.log('🎯 Energy sub-endpoint results:', results);
-        
-        // Look for successful endpoints
-        const workingEndpoints = Object.entries(results)
-          .filter(([path, result]) => result.success)
-          .map(([path, result]) => ({ path, ...result }));
-        
-        if (workingEndpoints.length > 0) {
-          console.log('🎉 Found working energy endpoints:', workingEndpoints);
+    try {
+      setIsInitializing(true);
+      console.log('🔄 Loading all API data...');
+      
+      // Set all loading states to true
+      setDashboardData(prev => ({
+        ...prev,
+        loading: {
+          carbon: true,
+          prices: true,
+          weather: true,
+          rebaseWeather: true, // ✅ Add Rebase weather loading
+          solar: true,
+          power: true
         }
-      } catch (error) {
-        console.error('❌ Error testing energy endpoints:', error);
-      }
-    };
-    
-    testEnergyPaths();
-  }, []);
-
-  const loadSites = async () => {
-    try {
-      const sitesData = await fetchEnergySites(); // UPDATED
-      setSites(sitesData);
-      if (sitesData.length > 0) {
-        setSelectedSite(sitesData[0]);
-      }
-    } catch (error) {
-      console.error('Error loading sites:', error);
-    }
-  };
-
-  const loadAllAPIData = async (site) => {
-    const { latitude, longitude } = site.location;
-    
-    // Set all loading states
-    setDashboardData(prev => ({
-      ...prev,
-      loading: {
-        carbon: true,
-        prices: true,
-        power: true,
-        solar: true,
-        weather: true
-      }
-    }));
-
-    // Load data from all APIs in parallel - UPDATED
-    const apiPromises = [
-      fetchCarbonIntensity('SE').then(data => ({ carbon: data })),
-      fetchElectricityPrices().then(data => ({ prices: data })),
-      fetchPowerBreakdown('SE').then(data => ({ power: data })),
-      fetchSolarGeneration().then(data => ({ solar: data })),
-      fetchWeatherData(latitude, longitude).then(data => ({ rebaseWeather: data })), // UPDATED
-      fetchCurrentWeather(latitude, longitude).then(data => ({ openWeather: data })) // UPDATED
-    ];
-
-    // Process results as they come in
-    try {
-      const results = await Promise.allSettled(apiPromises);
+      }));
       
-      let newData = {
-        carbonIntensity: null,
-        electricityPrices: null,
-        powerBreakdown: null,
-        solarGeneration: null,
-        rebaseWeather: null,
-        openWeather: null,
+      setError(null);
+      
+      const results = await Promise.allSettled([
+        fetchElectricityPrices(),
+        fetchCarbonIntensity(),
+        fetchSolarGeneration(),
+        fetchCurrentWeather(),
+        fetchPowerBreakdown(),
+        fetchRebaseWeather('Stockholm') // ✅ Add Rebase weather call
+      ]);
+
+      const [pricesResult, carbonResult, solarResult, weatherResult, powerResult, rebaseWeatherResult] = results;
+      
+      // ✅ ADD DEBUGGING HERE:
+      console.log('🔍 Debug - OpenWeather data:', weatherResult.value);
+      console.log('🔍 Debug - Rebase weather data:', rebaseWeatherResult?.value);
+      
+      // Update dashboard data with results
+      setDashboardData(prev => ({
+        ...prev,
+        electricityPrices: pricesResult.status === 'fulfilled' ? pricesResult.value : null,
+        carbonIntensity: carbonResult.status === 'fulfilled' ? carbonResult.value : null,
+        solarGeneration: solarResult.status === 'fulfilled' ? solarResult.value : null,
+        openWeather: weatherResult.status === 'fulfilled' ? weatherResult.value : null,
+        rebaseWeather: rebaseWeatherResult?.status === 'fulfilled' ? rebaseWeatherResult.value : null, // ✅ Add Rebase weather
+        powerBreakdown: powerResult.status === 'fulfilled' ? powerResult.value : null,
         loading: {
           carbon: false,
           prices: false,
-          power: false,
+          weather: false,
+          rebaseWeather: false, // ✅ Add Rebase weather loading state
           solar: false,
-          weather: false
+          power: false
         },
         lastUpdated: new Date().toISOString()
-      };
+      }));
 
-      results.forEach((result, index) => {
-        if (result.status === 'fulfilled') {
-          const data = result.value;
-          if (data.carbon) newData.carbonIntensity = data.carbon;
-          if (data.prices) newData.electricityPrices = data.prices;
-          if (data.power) newData.powerBreakdown = data.power;
-          if (data.solar) newData.solarGeneration = data.solar;
-          if (data.rebaseWeather) newData.rebaseWeather = data.rebaseWeather;
-          if (data.openWeather) newData.openWeather = data.openWeather;
-        }
-      });
+      // Also update individual state variables for compatibility
+      if (pricesResult.status === 'fulfilled') {
+        setElectricityPrices(pricesResult.value);
+      }
+      if (carbonResult.status === 'fulfilled') {
+        setCarbonIntensity(carbonResult.value);
+      }
+      if (solarResult.status === 'fulfilled') {
+        setSolarData(solarResult.value);
+      }
+      if (weatherResult.status === 'fulfilled') {
+        setWeatherData(weatherResult.value);
+      }
 
-      setDashboardData(newData);
+      console.log('✅ API data loading complete');
 
     } catch (error) {
-      console.error('Error loading API data:', error);
+      console.error('❌ Error loading API data:', error); 
+      setError('Failed to load dashboard data');
+      
+      // Reset loading states on error
       setDashboardData(prev => ({
         ...prev,
         loading: {
           carbon: false,
           prices: false,
-          power: false,
+          weather: false,
+          rebaseWeather: false, // ✅ Add Rebase weather loading state
           solar: false,
-          weather: false
+          power: false
         }
       }));
+    } finally {
+      setIsInitializing(false);
     }
   };
 
+  // ✅ FIXED USE EFFECT
+  useEffect(() => {
+    let isMounted = true;
+
+    const initializeDashboard = async () => {
+      // Global lock to prevent any duplicate execution
+      if (!isMounted || globalInitLock) {
+        console.log('🚫 Dashboard initialization blocked (already running)');
+        return;
+      }
+      
+      globalInitLock = true; // Set global lock
+      console.log('🚀 Initializing dashboard (single load)...');
+      
+      try {
+        // Load sites first
+        const sitesData = await fetchEnergySites();
+        if (!isMounted) return;
+        
+        setSites(sitesData);
+        if (sitesData && sitesData.length > 0) {
+          setSelectedSite(sitesData[0]);
+        }
+        
+        // Then load API data
+        await loadAllAPIData();
+        
+      } catch (error) {
+        console.error('❌ Dashboard initialization error:', error);
+      } finally {
+        // Keep lock for 2 seconds to prevent rapid re-initialization
+        setTimeout(() => {
+          globalInitLock = false;
+        }, 2000);
+      }
+    };
+    
+    initializeDashboard();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Only run once on mount
+
   const refreshAllData = () => {
-    if (selectedSite) {
-      loadAllAPIData(selectedSite);
+    loadAllAPIData();
+  };
+
+  // Add to Dashboard component:
+  const testRebaseAPI = async () => {
+    const { testRebaseConnection } = await import('../api/rebaseApi');
+    const result = await testRebaseConnection();
+    
+    if (result.success) {
+      console.log('🎉 Rebase API is working!');
+      alert('✅ Rebase API connection successful!');
+    } else {
+      console.error('❌ Rebase API test failed:', result.error);
+      alert('❌ Rebase API connection failed: ' + result.error);
     }
   };
 
@@ -215,8 +223,18 @@ const EnhancedDashboard = () => {
           >
             🔄 Refresh All Data
           </button>
+          <button onClick={testRebaseAPI} className="test-btn">
+            🔌 Test Rebase API
+          </button>
         </div>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="error-banner">
+          ⚠️ {error}
+        </div>
+      )}
 
       {/* Site Info */}
       {selectedSite && (
@@ -224,8 +242,9 @@ const EnhancedDashboard = () => {
           <h2>📍 {selectedSite.name}</h2>
           <div className="site-details">
             <span>🔋 {selectedSite.capacity} MW</span>
-            <span>🌍 {selectedSite.location.latitude}°N, {selectedSite.location.longitude}°E</span>
-            <span>🏁 {selectedSite.country}</span>
+            <span>🌍 {selectedSite.location}</span>
+            <span>⚡ {selectedSite.type}</span>
+            <span>📊 {selectedSite.status}</span>
           </div>
         </div>
       )}
@@ -272,11 +291,11 @@ const EnhancedDashboard = () => {
             <span className={`source ${dashboardData.electricityPrices?.source}`}>
               ENTSO-E {dashboardData.electricityPrices?.source === 'real' ? '✅' : '🔶'}
             </span>
-            <span className={`source ${dashboardData.rebaseWeather?.source}`}>
+            <span className={`source ${dashboardData.rebaseWeather?.source || 'mock'}`}>
               Rebase {dashboardData.rebaseWeather?.source === 'real' ? '✅' : '🔶'}
             </span>
-            <span className={`source ${dashboardData.openWeather?.source}`}>
-              OpenWeather {dashboardData.openWeather?.source === 'real' ? '✅' : '🔶'}
+            <span className={`source ${dashboardData.openWeather?.source || 'real'}`}>
+              OpenWeather {dashboardData.openWeather?.main ? '✅' : '🔶'}
             </span>
           </div>
         </div>

@@ -1,5 +1,6 @@
 const ENTSOE_API_BASE = 'https://web-api.tp.entsoe.eu/api';
 const API_TOKEN = import.meta.env.VITE_ENTSOE_API_KEY;
+const API_KEY = import.meta.env.VITE_ENTSOE_API_KEY || '5af65803-e6f3-4378-9d63-737edac43cab';
 
 // Swedish electricity domains for ENTSO-E
 export const SWEDISH_DOMAINS = {
@@ -8,6 +9,8 @@ export const SWEDISH_DOMAINS = {
   SE3: '10Y1001A1001A46L', // Southern Sweden
   SE4: '10Y1001A1001A47J'  // Malmö area
 };
+
+const SWEDEN_DOMAIN = SWEDISH_DOMAINS.SE3; // Default domain
 
 // Document types for ENTSO-E API
 export const DOCUMENT_TYPES = {
@@ -38,10 +41,366 @@ export const PSR_TYPES = {
   OTHER: 'B20'
 };
 
+// ✅ FIXED: Date formatting functions
+const formatDateForEntsoe = (date) => {
+  if (!date) date = new Date();
+  const d = new Date(date);
+
+  // ENTSO-E expects format: YYYYMMDDHHMM (UTC)
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  const hour = String(d.getUTCHours()).padStart(2, '0');
+  const minute = String(d.getUTCMinutes()).padStart(2, '0');
+  
+  return `${year}${month}${day}${hour}${minute}`;
+};
+
+// ✅ FIXED: Added missing formatDateForAPI function
+const formatDateForAPI = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hour = String(date.getHours()).padStart(2, '0');
+  return `${year}${month}${day}${hour}00`;
+};
+
+const getCountryCode = (country) => {
+  const countryCodes = {
+    'SE': SWEDISH_DOMAINS.SE3, // Default to SE3
+    'Sweden': SWEDISH_DOMAINS.SE3,
+    'NO': '10YNO-0--------C', // Norway
+    'DK': '10Y1001A1001A65H', // Denmark
+    'FI': '10YFI-1--------U', // Finland
+    'DE': '10Y1001A1001A83F'  // Germany
+  };
+  return countryCodes[country] || SWEDISH_DOMAINS.SE3;
+};
+
+// XML Parser for Price Data
+const parseEntsoePriceXML = (xmlText) => {
+  try {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+    
+    // Check for errors
+    const errorElements = xmlDoc.querySelectorAll('Reason');
+    if (errorElements.length > 0) {
+      const errorText = errorElements[0].textContent;
+      console.warn('⚠️ ENTSO-E API Error:', errorText);
+      throw new Error(`ENTSO-E API Error: ${errorText}`);
+    }
+
+    const timeSeries = xmlDoc.querySelectorAll('TimeSeries');
+    const prices = [];
+    let domain = 'SE3';
+
+    timeSeries.forEach(series => {
+      // Get domain from TimeSeries
+      const domainElement = series.querySelector('in_Domain\\.mRID');
+      if (domainElement) {
+        const domainId = domainElement.textContent;
+        domain = Object.keys(SWEDISH_DOMAINS).find(key => SWEDISH_DOMAINS[key] === domainId) || 'SE3';
+      }
+
+      const periods = series.querySelectorAll('Period');
+      periods.forEach(period => {
+        const startTime = period.querySelector('timeInterval start')?.textContent;
+        const points = period.querySelectorAll('Point');
+        
+        points.forEach(point => {
+          const position = parseInt(point.querySelector('position')?.textContent || '0');
+          const priceAmount = parseFloat(point.querySelector('price\\.amount')?.textContent || '0');
+          
+          if (startTime && position && priceAmount) {
+            const timestamp = new Date(startTime);
+            timestamp.setUTCHours(timestamp.getUTCHours() + position - 1);
+            
+            prices.push({
+              timestamp: timestamp.toISOString(),
+              price: priceAmount, // EUR/MWh
+              position,
+              hour: timestamp.getUTCHours()
+            });
+          }
+        });
+      });
+    });
+
+    // Sort by timestamp
+    prices.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    return {
+      source: 'real',
+      prices,
+      total: prices.length,
+      domain,
+      fetchedAt: new Date().toISOString(),
+      currency: 'EUR',
+      unit: 'MWh',
+      summary: {
+        average: prices.length > 0 ? prices.reduce((sum, p) => sum + p.price, 0) / prices.length : 0,
+        min: prices.length > 0 ? Math.min(...prices.map(p => p.price)) : 0,
+        max: prices.length > 0 ? Math.max(...prices.map(p => p.price)) : 0,
+        peakHours: prices.filter(p => p.hour >= 17 && p.hour <= 20).length,
+        offPeakHours: prices.filter(p => p.hour >= 0 && p.hour <= 6).length
+      }
+    };
+  } catch (error) {
+    console.error('❌ Error parsing ENTSO-E price XML:', error);
+    throw error;
+  }
+};
+
+// XML Parser for Energy Data
+const parseEntsoeEnergyXML = (xmlText) => {
+  try {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+    
+    const timeSeries = xmlDoc.querySelectorAll('TimeSeries');
+    const energyData = [];
+
+    timeSeries.forEach(series => {
+      const periods = series.querySelectorAll('Period');
+      periods.forEach(period => {
+        const startTime = period.querySelector('timeInterval start')?.textContent;
+        const points = period.querySelectorAll('Point');
+        
+        points.forEach(point => {
+          const position = parseInt(point.querySelector('position')?.textContent || '0');
+          const quantity = parseFloat(point.querySelector('quantity')?.textContent || '0');
+          
+          if (startTime && position) {
+            const timestamp = new Date(startTime);
+            timestamp.setUTCHours(timestamp.getUTCHours() + position - 1);
+            
+            energyData.push({
+              timestamp: timestamp.toISOString(),
+              value: quantity,
+              position
+            });
+          }
+        });
+      });
+    });
+
+    return {
+      source: 'real',
+      energyData,
+      total: energyData.length,
+      fetchedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('❌ Error parsing ENTSO-E energy XML:', error);
+    throw error;
+  }
+};
+
+// Mock Data Generators
+const generateMockElectricityPrices = () => {
+  const prices = [];
+  const now = new Date();
+  
+  for (let i = 0; i < 24; i++) {
+    const timestamp = new Date(now);
+    timestamp.setHours(i, 0, 0, 0);
+    
+    // Price pattern: higher during peak hours (17-20), lower at night
+    let basePrice = 30; // Base price EUR/MWh
+    const hour = i;
+    
+    if (hour >= 17 && hour <= 20) {
+      basePrice += 15; // Peak hours
+    } else if (hour >= 0 && hour <= 6) {
+      basePrice -= 10; // Off-peak hours
+    }
+    
+    // Add some random variation
+    const variation = (Math.random() - 0.5) * 10;
+    const price = Math.max(5, basePrice + variation);
+    
+    prices.push({
+      timestamp: timestamp.toISOString(),
+      price: Math.round(price * 100) / 100,
+      position: i + 1,
+      hour
+    });
+  }
+  
+  return {
+    source: 'mock',
+    prices,
+    total: prices.length,
+    domain: 'SE3',
+    fetchedAt: new Date().toISOString(),
+    currency: 'EUR',
+    unit: 'MWh',
+    summary: {
+      average: prices.reduce((sum, p) => sum + p.price, 0) / prices.length,
+      min: Math.min(...prices.map(p => p.price)),
+      max: Math.max(...prices.map(p => p.price)),
+      peakHours: prices.filter(p => p.hour >= 17 && p.hour <= 20).length,
+      offPeakHours: prices.filter(p => p.hour >= 0 && p.hour <= 6).length
+    }
+  };
+};
+
+const generateMockEnergyData = () => {
+  const energyData = [];
+  const now = new Date();
+  
+  for (let i = 0; i < 24; i++) {
+    const timestamp = new Date(now);
+    timestamp.setHours(i, 0, 0, 0);
+    
+    // Energy consumption pattern
+    let baseConsumption = 5000; // Base consumption MW
+    const hour = i;
+    
+    if (hour >= 8 && hour <= 18) {
+      baseConsumption += 2000; // Daytime increase
+    }
+    
+    const variation = (Math.random() - 0.5) * 1000;
+    const consumption = Math.max(3000, baseConsumption + variation);
+    
+    energyData.push({
+      timestamp: timestamp.toISOString(),
+      value: Math.round(consumption),
+      position: i + 1
+    });
+  }
+  
+  return {
+    source: 'mock',
+    energyData,
+    total: energyData.length,
+    fetchedAt: new Date().toISOString()
+  };
+};
+
+const generateMockSolarGeneration = () => {
+  const data = [];
+  const now = new Date();
+  
+  // Generate 24 hours of mock solar data
+  for (let i = 0; i < 24; i++) {
+    const timestamp = new Date(now);
+    timestamp.setHours(i, 0, 0, 0);
+    
+    // Solar generation pattern (peaks at noon)
+    const hour = i;
+    let generation = 0;
+    
+    if (hour >= 6 && hour <= 18) {
+      // Daylight hours - create a bell curve
+      const normalizedHour = (hour - 12) / 6; // -1 to 1
+      generation = Math.max(0, 800 * Math.exp(-2 * normalizedHour * normalizedHour));
+    }
+    
+    data.push({
+      timestamp: timestamp.toISOString(),
+      generation: Math.round(generation),
+      value: Math.round(generation), // Added for compatibility
+      position: i + 1
+    });
+  }
+  
+  return {
+    source: 'mock',
+    data,
+    total: data.length,
+    domain: 'SE3',
+    fetchedAt: new Date().toISOString(),
+    unit: 'MW',
+    summary: {
+      maxGeneration: Math.max(...data.map(d => d.generation)),
+      avgGeneration: data.reduce((sum, d) => sum + d.generation, 0) / data.length,
+      totalEnergy: data.reduce((sum, d) => sum + d.generation, 0)
+    }
+  };
+};
+
+const generateMockWindGeneration = () => {
+  const data = [];
+  const now = new Date();
+  
+  // Generate 24 hours of mock wind data
+  for (let i = 0; i < 24; i++) {
+    const timestamp = new Date(now);
+    timestamp.setHours(i, 0, 0, 0);
+    
+    // Wind generation - more variable than solar, can happen at night
+    const baseWind = 1200; // Base wind capacity
+    const variability = 0.6; // 60% variability
+    const generation = Math.round(baseWind * (0.2 + Math.random() * variability));
+    
+    data.push({
+      timestamp: timestamp.toISOString(),
+      generation,
+      value: generation, // Added for compatibility
+      position: i + 1
+    });
+  }
+  
+  return {
+    source: 'mock',
+    data,
+    total: data.length,
+    domain: 'SE3',
+    fetchedAt: new Date().toISOString(),
+    unit: 'MW',
+    summary: {
+      maxGeneration: Math.max(...data.map(d => d.generation)),
+      avgGeneration: data.reduce((sum, d) => sum + d.generation, 0) / data.length,
+      totalEnergy: data.reduce((sum, d) => sum + d.generation, 0)
+    }
+  };
+};
+
+// Main API Functions
+export async function fetchEnergyData(country = 'SE', startDate, endDate) {
+  try {
+    const apiKey = import.meta.env.VITE_ENTSOE_API_KEY || API_KEY;
+    
+    const params = new URLSearchParams({
+      securityToken: apiKey,
+      documentType: DOCUMENT_TYPES.PRICES,
+      in_Domain: getCountryCode(country),
+      out_Domain: getCountryCode(country),
+      periodStart: formatDateForEntsoe(startDate),
+      periodEnd: formatDateForEntsoe(endDate)
+    });
+
+    console.log('🔄 Fetching ENTSO-E energy data via proxy...');
+    const response = await fetch(`/api/entsoe?${params}`);
+    
+    if (!response.ok) {
+      console.warn(`⚠️ ENTSO-E energy data API error: ${response.status}`);
+      throw new Error(`ENTSO-E API error: ${response.status}`);
+    }
+    
+    const xmlText = await response.text();
+    console.log('📋 ENTSO-E XML response sample:', xmlText.substring(0, 200) + '...');
+    
+    const parsedData = parseEntsoeEnergyXML(xmlText);
+    
+    console.log('✅ ENTSO-E energy data received:', parsedData.energyData?.length || 0, 'data points');
+    return parsedData;
+    
+  } catch (error) {
+    console.error('❌ Error fetching energy data:', error);
+    return generateMockEnergyData();
+  }
+}
+
 export const fetchElectricityPrices = async (domain = SWEDISH_DOMAINS.SE3, periodStart, periodEnd) => {
   try {
+    const apiKey = API_TOKEN || API_KEY;
+    
     const params = new URLSearchParams({
-      securityToken: API_TOKEN,
+      securityToken: apiKey,
       documentType: DOCUMENT_TYPES.PRICES,
       in_Domain: domain,
       out_Domain: domain,
@@ -49,7 +408,7 @@ export const fetchElectricityPrices = async (domain = SWEDISH_DOMAINS.SE3, perio
       periodEnd: periodEnd || formatDateForEntsoe(new Date(Date.now() + 24 * 60 * 60 * 1000))
     });
 
-    console.log('🔄 Fetching ENTSO-E electricity prices...');
+    console.log('🔄 Fetching ENTSO-E electricity prices via proxy...');
     const response = await fetch(`/api/entsoe?${params}`);
     
     if (!response.ok) {
@@ -69,31 +428,108 @@ export const fetchElectricityPrices = async (domain = SWEDISH_DOMAINS.SE3, perio
   }
 };
 
-export const fetchSolarGeneration = async (domain = SWEDISH_DOMAINS.SE3, periodStart, periodEnd) => {
+// ✅ FIXED: Complete Solar Generation Function
+export const fetchSolarGeneration = async () => {
   try {
+    // Get current date in Stockholm timezone
+    const now = new Date();
+    const stockholmTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Stockholm"}));
+    
+    // Use yesterday's date to ensure data availability
+    const yesterday = new Date(stockholmTime);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const start = formatDateForAPI(yesterday);
+    const end = formatDateForAPI(stockholmTime);
+    
+    console.log('🔄 Fetching ENTSO-E solar generation via proxy...');
+    console.log('📅 Date range:', { start, end, domain: SWEDEN_DOMAIN });
+
     const params = new URLSearchParams({
-      securityToken: API_TOKEN,
-      documentType: DOCUMENT_TYPES.ACTUAL_GENERATION,
-      in_Domain: domain,
-      periodStart: periodStart || formatDateForEntsoe(new Date()),
-      periodEnd: periodEnd || formatDateForEntsoe(new Date(Date.now() + 24 * 60 * 60 * 1000)),
-      psrType: PSR_TYPES.SOLAR
+      securityToken: API_KEY,
+      documentType: 'A75', // Actual generation per type
+      in_Domain: SWEDEN_DOMAIN,
+      periodStart: start,
+      periodEnd: end,
+      psrType: 'B16' // Solar
     });
 
-    console.log('🔄 Fetching ENTSO-E solar generation...');
     const response = await fetch(`/api/entsoe?${params}`);
-    
+
     if (!response.ok) {
       console.warn(`⚠️ ENTSO-E solar API error: ${response.status}`);
-      throw new Error(`ENTSO-E API error: ${response.status}`);
+      console.log('📝 Using mock solar data');
+      return generateMockSolarGeneration();
     }
-    
+
     const xmlText = await response.text();
-    const parsedData = parseEntsoeGenerationXML(xmlText);
+    console.log('✅ ENTSO-E solar generation XML received');
+
+    // Parse XML response
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
     
-    console.log('✅ ENTSO-E solar generation received:', parsedData.generation?.length || 0, 'data points');
-    return parsedData;
+    // Check for acknowledgement (error) response
+    const acknowledgement = xmlDoc.querySelector('Acknowledgement_MarketDocument');
+    if (acknowledgement) {
+      const reason = xmlDoc.querySelector('Reason text')?.textContent || 'Unknown error';
+      console.warn('⚠️ ENTSO-E solar acknowledgement:', reason);
+      return generateMockSolarGeneration();
+    }
+
+    // Parse time series data
+    const timeSeries = xmlDoc.querySelectorAll('TimeSeries');
+    const solarData = [];
+
+    timeSeries.forEach(series => {
+      const periods = series.querySelectorAll('Period');
+      periods.forEach(period => {
+        const startTime = period.querySelector('timeInterval start')?.textContent;
+        const points = period.querySelectorAll('Point');
+        
+        points.forEach(point => {
+          const position = parseInt(point.querySelector('position')?.textContent || '0');
+          const quantity = parseFloat(point.querySelector('quantity')?.textContent || '0');
+          
+          if (startTime && position) {
+            const timestamp = new Date(startTime);
+            timestamp.setUTCHours(timestamp.getUTCHours() + position - 1);
+            
+            solarData.push({
+              timestamp: timestamp.toISOString(),
+              generation: quantity, // MW
+              value: quantity, // For compatibility
+              position
+            });
+          }
+        });
+      });
+    });
+
+    if (solarData.length === 0) {
+      console.warn('⚠️ No solar generation data found in response');
+      return generateMockSolarGeneration();
+    }
+
+    // Sort by timestamp
+    solarData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    console.log(`✅ ENTSO-E solar generation received: ${solarData.length} data points`);
     
+    return {
+      source: 'real',
+      data: solarData,
+      total: solarData.length,
+      domain: SWEDEN_DOMAIN,
+      fetchedAt: new Date().toISOString(),
+      unit: 'MW',
+      summary: {
+        maxGeneration: Math.max(...solarData.map(d => d.generation)),
+        avgGeneration: solarData.reduce((sum, d) => sum + d.generation, 0) / solarData.length,
+        totalEnergy: solarData.reduce((sum, d) => sum + d.generation, 0)
+      }
+    };
+
   } catch (error) {
     console.error('❌ Error fetching solar generation:', error);
     return generateMockSolarGeneration();
@@ -102,325 +538,115 @@ export const fetchSolarGeneration = async (domain = SWEDISH_DOMAINS.SE3, periodS
 
 export const fetchWindGeneration = async (domain = SWEDISH_DOMAINS.SE3, periodStart, periodEnd) => {
   try {
+    // Use a more reliable date range - yesterday to today
+    const now = new Date();
+    
+    // Start: Yesterday at 00:00 UTC
+    const yesterday = new Date(now);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+    yesterday.setUTCHours(0, 0, 0, 0);
+    
+    // End: Today at current hour UTC
+    const today = new Date(now);
+    today.setUTCMinutes(0, 0, 0); // Round to current hour
+    
     const params = new URLSearchParams({
-      securityToken: API_TOKEN,
+      securityToken: API_TOKEN || API_KEY,
       documentType: DOCUMENT_TYPES.ACTUAL_GENERATION,
       in_Domain: domain,
-      periodStart: periodStart || formatDateForEntsoe(new Date()),
-      periodEnd: periodEnd || formatDateForEntsoe(new Date(Date.now() + 24 * 60 * 60 * 1000)),
-      psrType: PSR_TYPES.WIND_ONSHORE
+      periodStart: periodStart || formatDateForEntsoe(yesterday),
+      periodEnd: periodEnd || formatDateForEntsoe(today),
+      psrType: PSR_TYPES.WIND_ONSHORE // Wind onshore
     });
 
-    console.log('🔄 Fetching ENTSO-E wind generation...');
-    const response = await fetch(`/api/entsoe?${params}`);
+    const url = `/api/entsoe?${params}`;
+    console.log('🔄 Fetching ENTSO-E wind generation via proxy...');
+    console.log('💨 Date range:', {
+      start: periodStart || formatDateForEntsoe(yesterday),
+      end: periodEnd || formatDateForEntsoe(today),
+      domain
+    });
+
+    const response = await fetch(url);
     
     if (!response.ok) {
-      console.warn(`⚠️ ENTSO-E wind API error: ${response.status}`);
+      console.warn('⚠️ ENTSO-E wind API error:', response.status);
       throw new Error(`ENTSO-E API error: ${response.status}`);
     }
-    
+
     const xmlText = await response.text();
-    const parsedData = parseEntsoeGenerationXML(xmlText);
+    console.log('✅ ENTSO-E wind generation XML received');
+
+    // Parse XML response
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
     
-    console.log('✅ ENTSO-E wind generation received:', parsedData.generation?.length || 0, 'data points');
-    return parsedData;
+    // Check for acknowledgement (error) response
+    const acknowledgement = xmlDoc.querySelector('Acknowledgement_MarketDocument');
+    if (acknowledgement) {
+      const reason = xmlDoc.querySelector('Reason text')?.textContent || 'Unknown error';
+      console.warn('⚠️ ENTSO-E wind acknowledgement:', reason);
+      throw new Error(`ENTSO-E API acknowledgement: ${reason}`);
+    }
+
+    // Parse time series data
+    const timeSeries = xmlDoc.querySelectorAll('TimeSeries');
+    const windData = [];
+
+    timeSeries.forEach(series => {
+      const periods = series.querySelectorAll('Period');
+      periods.forEach(period => {
+        const startTime = period.querySelector('timeInterval start')?.textContent;
+        const points = period.querySelectorAll('Point');
+        
+        points.forEach(point => {
+          const position = parseInt(point.querySelector('position')?.textContent || '0');
+          const quantity = parseFloat(point.querySelector('quantity')?.textContent || '0');
+          
+          if (startTime && position) {
+            const timestamp = new Date(startTime);
+            timestamp.setUTCHours(timestamp.getUTCHours() + position - 1);
+            
+            windData.push({
+              timestamp: timestamp.toISOString(),
+              generation: quantity, // MW
+              value: quantity, // For compatibility
+              position
+            });
+          }
+        });
+      });
+    });
+
+    if (windData.length === 0) {
+      console.warn('⚠️ No wind generation data found in response');
+      throw new Error('No wind data in response');
+    }
+
+    // Sort by timestamp
+    windData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    console.log(`✅ ENTSO-E wind generation received: ${windData.length} data points`);
     
+    return {
+      source: 'real',
+      data: windData,
+      total: windData.length,
+      domain,
+      fetchedAt: new Date().toISOString(),
+      unit: 'MW',
+      summary: {
+        maxGeneration: Math.max(...windData.map(d => d.generation)),
+        avgGeneration: windData.reduce((sum, d) => sum + d.generation, 0) / windData.length,
+        totalEnergy: windData.reduce((sum, d) => sum + d.generation, 0) // MWh (assuming hourly data)
+      }
+    };
+
   } catch (error) {
     console.error('❌ Error fetching wind generation:', error);
     return generateMockWindGeneration();
   }
 };
 
-export const fetchSystemLoad = async (domain = SWEDISH_DOMAINS.SE3, periodStart, periodEnd) => {
-  try {
-    const params = new URLSearchParams({
-      securityToken: API_TOKEN,
-      documentType: DOCUMENT_TYPES.LOAD,
-      in_Domain: domain,
-      out_Domain: domain,
-      periodStart: periodStart || formatDateForEntsoe(new Date()),
-      periodEnd: periodEnd || formatDateForEntsoe(new Date(Date.now() + 24 * 60 * 60 * 1000))
-    });
-
-    console.log('🔄 Fetching ENTSO-E system load...');
-    const response = await fetch(`/api/entsoe?${params}`);
-    
-    if (!response.ok) {
-      console.warn(`⚠️ ENTSO-E load API error: ${response.status}`);
-      throw new Error(`ENTSO-E API error: ${response.status}`);
-    }
-    
-    const xmlText = await response.text();
-    const parsedData = parseEntsoeLoadXML(xmlText);
-    
-    console.log('✅ ENTSO-E system load received:', parsedData.load?.length || 0, 'data points');
-    return parsedData;
-    
-  } catch (error) {
-    console.error('❌ Error fetching system load:', error);
-    return generateMockSystemLoad();
-  }
-};
-
-// Helper functions
-const formatDateForEntsoe = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hour = String(date.getHours()).padStart(2, '0');
-  return `${year}${month}${day}${hour}00`;
-};
-
-const parseEntsoePriceXML = (xmlText) => {
-  try {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-    
-    // Check for errors
-    const errorResponse = xmlDoc.getElementsByTagName('Reason');
-    if (errorResponse.length > 0) {
-      console.warn('⚠️ ENTSO-E API returned error:', errorResponse[0].textContent);
-      throw new Error('ENTSO-E API error response');
-    }
-    
-    const timeSeries = xmlDoc.getElementsByTagName('TimeSeries')[0];
-    if (!timeSeries) {
-      console.warn('⚠️ No TimeSeries found in ENTSO-E response');
-      throw new Error('No TimeSeries in response');
-    }
-    
-    const points = timeSeries.getElementsByTagName('Point');
-    const prices = [];
-    
-    for (let point of points) {
-      const position = point.getElementsByTagName('position')[0]?.textContent;
-      const price = point.getElementsByTagName('price.amount')[0]?.textContent;
-      
-      if (position && price) {
-        prices.push({
-          hour: parseInt(position),
-          price: parseFloat(price),
-          currency: 'EUR/MWh',
-          timestamp: new Date(Date.now() + (parseInt(position) - 1) * 60 * 60 * 1000).toISOString()
-        });
-      }
-    }
-    
-    return { 
-      source: 'real', 
-      prices, 
-      total: prices.length,
-      domain: 'SE3',
-      fetchedAt: new Date().toISOString()
-    };
-  } catch (error) {
-    console.error('❌ Error parsing ENTSO-E price XML:', error);
-    throw error;
-  }
-};
-
-const parseEntsoeGenerationXML = (xmlText) => {
-  try {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-    
-    // Check for errors
-    const errorResponse = xmlDoc.getElementsByTagName('Reason');
-    if (errorResponse.length > 0) {
-      console.warn('⚠️ ENTSO-E API returned error:', errorResponse[0].textContent);
-      throw new Error('ENTSO-E API error response');
-    }
-    
-    const timeSeries = xmlDoc.getElementsByTagName('TimeSeries')[0];
-    if (!timeSeries) {
-      console.warn('⚠️ No TimeSeries found in ENTSO-E response');
-      throw new Error('No TimeSeries in response');
-    }
-    
-    const points = timeSeries.getElementsByTagName('Point');
-    const generation = [];
-    
-    for (let point of points) {
-      const position = point.getElementsByTagName('position')[0]?.textContent;
-      const quantity = point.getElementsByTagName('quantity')[0]?.textContent;
-      
-      if (position && quantity) {
-        generation.push({
-          hour: parseInt(position),
-          generation: parseFloat(quantity),
-          unit: 'MW',
-          timestamp: new Date(Date.now() + (parseInt(position) - 1) * 60 * 60 * 1000).toISOString()
-        });
-      }
-    }
-    
-    return { 
-      source: 'real', 
-      generation, 
-      total: generation.length,
-      domain: 'SE3',
-      fetchedAt: new Date().toISOString()
-    };
-  } catch (error) {
-    console.error('❌ Error parsing ENTSO-E generation XML:', error);
-    throw error;
-  }
-};
-
-const parseEntsoeLoadXML = (xmlText) => {
-  try {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-    
-    const timeSeries = xmlDoc.getElementsByTagName('TimeSeries')[0];
-    if (!timeSeries) throw new Error('No TimeSeries in response');
-    
-    const points = timeSeries.getElementsByTagName('Point');
-    const load = [];
-    
-    for (let point of points) {
-      const position = point.getElementsByTagName('position')[0]?.textContent;
-      const quantity = point.getElementsByTagName('quantity')[0]?.textContent;
-      
-      if (position && quantity) {
-        load.push({
-          hour: parseInt(position),
-          load: parseFloat(quantity),
-          unit: 'MW',
-          timestamp: new Date(Date.now() + (parseInt(position) - 1) * 60 * 60 * 1000).toISOString()
-        });
-      }
-    }
-    
-    return { 
-      source: 'real', 
-      load, 
-      total: load.length,
-      domain: 'SE3',
-      fetchedAt: new Date().toISOString()
-    };
-  } catch (error) {
-    console.error('❌ Error parsing ENTSO-E load XML:', error);
-    throw error;
-  }
-};
-
-// Mock data functions
-function generateMockElectricityPrices() {
-  const basePrice = 45; // EUR/MWh typical for Sweden
-  const prices = Array.from({ length: 24 }, (_, i) => {
-    // Simulate typical daily price curve with morning and evening peaks
-    const hourlyVariation = Math.sin((i - 6) * Math.PI / 12) * 15; // Peak around 6 PM
-    const peakHourBonus = (i >= 7 && i <= 9) || (i >= 17 && i <= 20) ? 10 : 0;
-    const nightDiscount = (i >= 23 || i <= 6) ? -8 : 0;
-    
-    return {
-      hour: i + 1,
-      price: Math.round((basePrice + hourlyVariation + peakHourBonus + nightDiscount + Math.random() * 8) * 100) / 100,
-      currency: 'EUR/MWh',
-      timestamp: new Date(Date.now() + i * 60 * 60 * 1000).toISOString()
-    };
-  });
-  
-  return { 
-    source: 'mock', 
-    prices, 
-    total: prices.length,
-    domain: 'SE3',
-    fetchedAt: new Date().toISOString()
-  };
-}
-
-function generateMockSolarGeneration() {
-  const generation = Array.from({ length: 24 }, (_, i) => {
-    // Solar generation curve: 0 at night, peak around noon
-    const solarCurve = Math.max(0, Math.sin((i - 6) * Math.PI / 12));
-    const maxGeneration = 1200; // MW peak for Sweden
-    const seasonalFactor = 0.7; // Winter reduction
-    const cloudFactor = 0.9; // Light clouds
-    
-    return {
-      hour: i + 1,
-      generation: Math.round(solarCurve * maxGeneration * seasonalFactor * cloudFactor * (0.9 + Math.random() * 0.2)),
-      unit: 'MW',
-      timestamp: new Date(Date.now() + i * 60 * 60 * 1000).toISOString()
-    };
-  });
-  
-  return { 
-    source: 'mock', 
-    generation, 
-    total: generation.length,
-    domain: 'SE3',
-    fetchedAt: new Date().toISOString()
-  };
-}
-
-function generateMockWindGeneration() {
-  const generation = Array.from({ length: 24 }, (_, i) => {
-    // Wind is more variable and doesn't follow daily patterns as much
-    const baseWind = 2500; // MW typical for Sweden
-    const variability = (Math.random() - 0.5) * 1000; // ±500 MW variation
-    const hourlyTrend = Math.sin(i * Math.PI / 8) * 300; // Some daily variation
-    
-    return {
-      hour: i + 1,
-      generation: Math.max(100, Math.round(baseWind + variability + hourlyTrend)),
-      unit: 'MW',
-      timestamp: new Date(Date.now() + i * 60 * 60 * 1000).toISOString()
-    };
-  });
-  
-  return { 
-    source: 'mock', 
-    generation, 
-    total: generation.length,
-    domain: 'SE3',
-    fetchedAt: new Date().toISOString()
-  };
-}
-
-function generateMockSystemLoad() {
-  const load = Array.from({ length: 24 }, (_, i) => {
-    // Typical daily load pattern: low at night, peaks in morning and evening
-    const baseLoad = 12000; // MW typical for Sweden
-    const morningPeak = (i >= 7 && i <= 9) ? 2000 : 0;
-    const eveningPeak = (i >= 17 && i <= 21) ? 2500 : 0;
-    const nightReduction = (i >= 23 || i <= 6) ? -2000 : 0;
-    const randomVariation = (Math.random() - 0.5) * 500;
-    
-    return {
-      hour: i + 1,
-      load: Math.round(baseLoad + morningPeak + eveningPeak + nightReduction + randomVariation),
-      unit: 'MW',
-      timestamp: new Date(Date.now() + i * 60 * 60 * 1000).toISOString()
-    };
-  });
-  
-  return { 
-    source: 'mock', 
-    load, 
-    total: load.length,
-    domain: 'SE3',
-    fetchedAt: new Date().toISOString()
-  };
-}
-
-// Domain helper functions
-export const getDomainName = (domainCode) => {
-  const domainNames = {
-    [SWEDISH_DOMAINS.SE1]: 'Northern Sweden (SE1)',
-    [SWEDISH_DOMAINS.SE2]: 'Central Sweden (SE2)',
-    [SWEDISH_DOMAINS.SE3]: 'Southern Sweden (SE3)',
-    [SWEDISH_DOMAINS.SE4]: 'Malmö area (SE4)'
-  };
-  return domainNames[domainCode] || domainCode;
-};
-
-export const getAllSwedishDomains = () => {
-  return Object.entries(SWEDISH_DOMAINS).map(([key, value]) => ({
-    code: value,
-    name: getDomainName(value),
-    shortName: key
-  }));
-};
+// ✅ Additional utility exports
+export { formatDateForEntsoe, formatDateForAPI, getCountryCode };
