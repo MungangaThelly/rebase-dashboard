@@ -9,7 +9,7 @@ A comprehensive real-time renewable energy research platform that integrates mul
 ![APIs](https://img.shields.io/badge/APIs-6%20Integrated-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-🌐 **[Live Demo](https://rebaseenergyapi.netlify.app)** | 📁 **[GitHub Repository](https://github.com/MungangaThelly/rebase-dashboard)** | 💼 **[LinkedIn Profile](https://www.linkedin.com/in/thelly660/)**
+🌐 **[Live Demo](https://datademocracy.netlify.app)** | 📁 **[GitHub Repository](https://github.com/MungangaThelly/rebase-dashboard)** | 💼 **[LinkedIn Profile](https://www.linkedin.com/in/thelly660/)**
 
 ## 🚀 **Overview**
 
@@ -210,7 +210,7 @@ src/
 ## 🚀 **Deployment**
 
 ### **Live Application**
-🌐 **[rebaseenergyapi.netlify.app](https://rebaseenergyapi.netlify.app)**
+🌐 **[datademocracy.netlify.app](https://datademocracy.netlify.app)**
 
 ### **Build for Production**
 ```bash
@@ -263,7 +263,7 @@ MIT License - feel free to use this project for research, education, or commerci
 
 ### **Developer: Munganga Thelly**
 
-- 🌐 **Live Demo**: [rebaseenergyapi.netlify.app](https://rebaseenergyapi.netlify.app)
+- 🌐 **Live Demo**: [datademocracy.netlify.app](https://datademocracy.netlify.app)
 - 📁 **GitHub**: [MungangaThelly/rebase-dashboard](https://github.com/MungangaThelly/rebase-dashboard)
 - 💼 **LinkedIn**: [linkedin.com/in/thelly660](https://www.linkedin.com/in/thelly660/)
 - 📱 **Phone**: [+46 704810377](tel:+46704810377)
@@ -297,4 +297,4 @@ This renewable energy dashboard successfully demonstrates:
 
 *Built with ❤️ for the renewable energy transition by [Munganga Thelly](https://www.linkedin.com/in/thelly660/)*
 
-**🌍 Deployed at: [rebaseenergyapi.netlify.app](https://rebaseenergyapi.netlify.app)**
+**🌍 Deployed at: [datademocracy.netlify.app](https://datademocracy.netlify.app)**
