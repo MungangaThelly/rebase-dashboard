@@ -3,7 +3,7 @@
 
 *Built by **[Munganga Thelly](https://www.linkedin.com/in/thelly660/)***
 
-🌐 **[Live Demo: rebaseenergyapi.netlify.app](https://rebaseenergyapi.netlify.app)**
+🌐 **[Live Demo: datademocracy.netlify.app](https://datademocracy.netlify.app)**
 
 ---
 
@@ -128,7 +128,7 @@ Rebase APIs ────────┘   React + Recharts
 - **React 18**: Modern component architecture
 - **Promise.allSettled**: Parallel API handling
 - **Graceful Fallbacks**: Smart mock data systems
-- **Netlify Deployment**: Production hosting
+- **Netlify Deployment**: Production hosting at [datademocracy.netlify.app](https://datademocracy.netlify.app)
 - **Responsive Design**: Mobile + desktop optimized
 
 ---
@@ -141,6 +141,8 @@ Rebase APIs ────────┘   React + Recharts
 3. **Weather Comparison** → Dual-source analysis with charts
 4. **Market Monitoring** → Swedish energy market insights
 5. **Professional UI** → Research-grade visualization
+
+**🌐 Experience live: [datademocracy.netlify.app](https://datademocracy.netlify.app)**
 
 ---
 
@@ -198,10 +200,26 @@ Rebase APIs ────────┘   React + Recharts
 
 ---
 
+## 🎯 **Next Steps & Vision**
+
+### **Immediate Goals**
+- ✅ **Production Deployment** - Live at [datademocracy.netlify.app](https://datademocracy.netlify.app)
+- 🔄 **API Optimization** - Enhanced data refresh cycles
+- 📱 **Mobile Enhancement** - Progressive Web App features
+- 🔗 **Partnership Development** - Academic institution collaborations
+
+### **Long-term Vision**
+- **🌍 European Expansion** - Multi-country energy market coverage
+- **🤖 AI Integration** - Predictive energy market analysis
+- **📊 Advanced Analytics** - Machine learning insights
+- **🏢 Enterprise Features** - White-label solutions for organizations
+
+---
+
 ## 📞 **Professional Contact**
 
 ### **Developer: Munganga Thelly**
-- 🌐 **Live Demo**: [rebaseenergyapi.netlify.app](https://rebaseenergyapi.netlify.app)
+- 🌐 **Live Demo**: [datademocracy.netlify.app](https://datademocracy.netlify.app)
 - 📁 **GitHub**: [MungangaThelly/rebase-dashboard](https://github.com/MungangaThelly/rebase-dashboard)
 - 💼 **LinkedIn**: [linkedin.com/in/thelly660](https://www.linkedin.com/in/thelly660/)
 - 📱 **Phone**: [+46 704810377](tel:+46704810377)
@@ -222,4 +240,8 @@ Rebase APIs ────────┘   React + Recharts
 
 ---
 
-*Built with ❤️ for the renewable energy transition*
+**🌍 Experience the platform: [datademocracy.netlify.app](https://datademocracy.netlify.app)**
+
+---
+
+*Democratizing renewable energy data for researchers worldwide* 🌱⚡
